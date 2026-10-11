@@ -77,11 +77,11 @@ public class RobotContainer {
             AutoBuilder.configure(
                 () -> drivetrain.getState().Pose,
                 drivetrain::resetPose,
-                drivetrain::getRobotRelativeSpeeds, // Make sure this helper is added in CommandSwerveDrivetrain.java!
+                drivetrain::getRobotRelativeSpeeds,
                 (speeds, feedforwards) -> driveRobotRelative(speeds),
                 new PPHolonomicDriveController(
-                    new PIDConstants(5.0, 0.0, 0.0),
-                    new PIDConstants(5.0, 0.0, 0.0)
+                    new PIDConstants(5.0, 0.0, 0.0), //Driving PID
+                    new PIDConstants(15.0, 5, 0.1) //Turning PID
                 ),
                 config,
                 () -> mirrorChooser.getSelected() != null ? mirrorChooser.getSelected() : false,
