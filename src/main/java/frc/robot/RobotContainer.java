@@ -80,8 +80,8 @@ public class RobotContainer {
                 drivetrain::getRobotRelativeSpeeds,
                 (speeds, feedforwards) -> driveRobotRelative(speeds),
                 new PPHolonomicDriveController(
-                    new PIDConstants(5.0, 0.0, 0.0), //Driving PID
-                    new PIDConstants(30.0, 0, 2) //Turning PID
+                    new PIDConstants(5.0, 0.0, 0.0),
+                    new PIDConstants(28.0, 0, 1.5)
                 ),
                 config,
                 () -> mirrorChooser.getSelected() != null ? mirrorChooser.getSelected() : false,
