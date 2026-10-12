@@ -81,7 +81,7 @@ public class RobotContainer {
                 (speeds, feedforwards) -> driveRobotRelative(speeds),
                 new PPHolonomicDriveController(
                     new PIDConstants(5.0, 0.0, 0.0),
-                    new PIDConstants(28.0, 0, 1.5)
+                    new PIDConstants(18,0,2)
                 ),
                 config,
                 () -> mirrorChooser.getSelected() != null ? mirrorChooser.getSelected() : false,
