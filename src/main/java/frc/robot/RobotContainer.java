@@ -80,8 +80,8 @@ public class RobotContainer {
                 drivetrain::getRobotRelativeSpeeds, // Make sure this helper is added in CommandSwerveDrivetrain.java!
                 (speeds, feedforwards) -> driveRobotRelative(speeds),
                 new PPHolonomicDriveController(
-                    new PIDConstants(5.0, 0.0, 0.0),
-                    new PIDConstants(5.0, 0.0, 0.0)
+                    new PIDConstants(5.0, 0.0, 0.0), //Driving PID
+                    new PIDConstants(12.0, 0.4, 0.0) //Rotational PID
                 ),
                 config,
                 () -> mirrorChooser.getSelected() != null ? mirrorChooser.getSelected() : false,
@@ -95,6 +95,8 @@ public class RobotContainer {
     private void driveRobotRelative(ChassisSpeeds speeds) {
         drivetrain.setControl(
             robotCentricDrive
+                .withDeadband(0.0)
+                .withRotationalDeadband(0.0)
                 .withVelocityX(speeds.vxMetersPerSecond)
                 .withVelocityY(speeds.vyMetersPerSecond)
                 .withRotationalRate(speeds.omegaRadiansPerSecond)
