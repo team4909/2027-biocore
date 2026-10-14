@@ -31,6 +31,7 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 public class RobotContainer {
+    
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); 
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); 
 
@@ -54,7 +55,8 @@ public class RobotContainer {
 
     public RobotContainer() {
         configureNamedCommands();
-
+        SmartDashboard.putNumber("Auto/HeadingDeg", 0.0);
+        SmartDashboard.putNumber("Auto/RequestedOmega", 0.0);
         mirrorChooser.setDefaultOption("Don't Mirror (Blue)", false);
         mirrorChooser.addOption("Mirror Path (Red)", true);
         SmartDashboard.putData("Manual Mirror Override", mirrorChooser);
@@ -62,7 +64,7 @@ public class RobotContainer {
         configureAutoBuilder();
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Mode", autoChooser);
-
+                SmartDashboard.putNumber("Auto/HeadingDeg",drivetrain.getState().Pose.getRotation().getDegrees());
         configureBindings();
     }
 
@@ -80,8 +82,8 @@ public class RobotContainer {
                 drivetrain::getRobotRelativeSpeeds,
                 (speeds, feedforwards) -> driveRobotRelative(speeds),
                 new PPHolonomicDriveController(
-                    new PIDConstants(5.0, 0.0, 0.0),
-                    new PIDConstants(18.0, 0.0, 2.0)
+                    new PIDConstants(5.0, 0.0, 0.0), //Drive PID
+                    new PIDConstants(25, 0.0, 0.1) //Rotation PID
                 ),
                 config,
                 () -> mirrorChooser.getSelected() != null ? mirrorChooser.getSelected() : false,
@@ -101,6 +103,7 @@ public class RobotContainer {
                 .withVelocityY(speeds.vyMetersPerSecond)
                 .withRotationalRate(speeds.omegaRadiansPerSecond)
         );
+
     }
 
     private void configureBindings() {

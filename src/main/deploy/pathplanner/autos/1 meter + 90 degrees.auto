@@ -9,6 +9,12 @@
           "data": {
             "pathName": "1 meters"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "One meter + 90 degrees path"
+          }
         }
       ]
     }
