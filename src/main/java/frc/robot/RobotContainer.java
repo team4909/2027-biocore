@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
+import frc.robot.commands.TurnToHeading;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
@@ -69,8 +70,8 @@ public class RobotContainer {
     }
 
     private void configureNamedCommands() {
-        // Register your PathPlanner named commands here before configuring AutoBuilder
-        // e.g. NamedCommands.registerCommand("Intake", intakeSubsystem.intakeCommand());
+        NamedCommands.registerCommand("Spin90", new TurnToHeading(drivetrain, 90.0));
+        NamedCommands.registerCommand("Spin180", new TurnToHeading(drivetrain, 180.0));
     }
 
     private void configureAutoBuilder() {
@@ -83,7 +84,7 @@ public class RobotContainer {
                 (speeds, feedforwards) -> driveRobotRelative(speeds),
                 new PPHolonomicDriveController(
                     new PIDConstants(5.0, 0.0, 0.0), //Drive PID
-                    new PIDConstants(25, 0.0, 0.1) //Rotation PID
+                    new PIDConstants(6.0, 0.0, 0.4) //Rotation PID
                 ),
                 config,
                 () -> mirrorChooser.getSelected() != null ? mirrorChooser.getSelected() : false,
@@ -95,6 +96,7 @@ public class RobotContainer {
     }
 
     private void driveRobotRelative(ChassisSpeeds speeds) {
+        SmartDashboard.putNumber("Auto/RequestedOmega", speeds.omegaRadiansPerSecond);
         drivetrain.setControl(
             robotCentricDrive
                 .withDeadband(0.0)
@@ -133,6 +135,10 @@ public class RobotContainer {
 
         // Reset heading
         joystick.back().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        
+        // 90 degrees is LB, 180 is RB
+        joystick.leftBumper().onTrue(new TurnToHeading(drivetrain, 90.0));
+        joystick.rightBumper().onTrue(new TurnToHeading(drivetrain, 180.0));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
