@@ -51,6 +51,10 @@ public class Telemetry {
     private final DoublePublisher driveTimestamp = driveStateTable.getDoubleTopic("Timestamp").publish();
     private final DoublePublisher driveOdometryFrequency = driveStateTable.getDoubleTopic("OdometryFrequency").publish();
 
+    //Add StructPublisher field for AdvantageScope so I can use coderunner
+    private final StructPublisher<Pose2d> posePublisher = NetworkTableInstance.getDefault()
+        .getStructTopic("Pose/robotPose", Pose2d.struct).publish();
+
     /* Robot pose for field positioning */
     private final NetworkTable table = inst.getTable("Pose");
     private final DoubleArrayPublisher fieldPub = table.getDoubleArrayTopic("robotPose").publish();
@@ -103,7 +107,7 @@ public class Telemetry {
         SignalLogger.writeStructArray("DriveState/ModulePositions", SwerveModulePosition.struct, state.ModulePositions);
         SignalLogger.writeDouble("DriveState/OdometryPeriod", state.OdometryPeriod, "seconds");
         SignalLogger.writeInteger("DriveState/FailedDaqs", state.FailedDaqs);
-
+        posePublisher.set(state.Pose);
         /* Telemeterize the pose to a Field2d */
         fieldTypePub.set("Field2d");
 
