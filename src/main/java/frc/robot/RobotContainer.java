@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.TurnToHeading;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.VisionSubsystem;
 
 // PathPlanner Imports
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -54,6 +55,7 @@ public class RobotContainer {
     private SendableChooser<Command> autoChooser;
     private final SendableChooser<Boolean> mirrorChooser = new SendableChooser<>();
 
+
     public RobotContainer() {
         configureNamedCommands();
         SmartDashboard.putNumber("Auto/HeadingDeg", 0.0);
@@ -68,7 +70,19 @@ public class RobotContainer {
                 SmartDashboard.putNumber("Auto/HeadingDeg",drivetrain.getState().Pose.getRotation().getDegrees());
         configureBindings();
     }
+    public VisionSubsystem frontVision = new VisionSubsystem(
+        VisionConstants.FRONT_CAMERA_NAME,
+        VisionConstants.FRONT_ROBOT_TO_CAMERA,
+        drivetrain::addVisionMeasurement,
+        drivetrain::getPose
+    );
 
+    public VisionSubsystem backVision = new VisionSubsystem(
+        VisionConstants.BACK_CAMERA_NAME,
+        VisionConstants.BACK_ROBOT_TO_CAMERA,
+        drivetrain::addVisionMeasurement,
+        drivetrain::getPose
+    );
     private void configureNamedCommands() {
         NamedCommands.registerCommand("Spin90", new TurnToHeading(drivetrain, 90.0));
         NamedCommands.registerCommand("Spin180", new TurnToHeading(drivetrain, 180.0));
