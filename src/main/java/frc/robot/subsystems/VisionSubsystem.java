@@ -46,8 +46,10 @@ public class VisionSubsystem extends SubsystemBase {
     private int rejectedCount;
     private int fusedCount;
     private String lastReason = "No frame yet";
+    private String cameraName;
 
 public VisionSubsystem(String cameraName, Transform3d robotToCamera, MeasurementConsumer consumer, Supplier<Pose2d> robotPose) {
+    this.cameraName = cameraName;
     this.consumer = consumer;
     this.robotPose = robotPose;
     
@@ -82,18 +84,18 @@ public VisionSubsystem(String cameraName, Transform3d robotToCamera, Measurement
             processPose(frame);
         }
         
-        field.setRobotPose(robotPose.get());
-        SmartDashboard.putBoolean("Vision/Connected", camera.isConnected());
-        SmartDashboard.putBoolean("Vision/FreshFrame", isHealthy());
-        SmartDashboard.putBoolean("Vision/HasTargets", isHealthy() && latest.hasTargets());
+field.setRobotPose(robotPose.get());
+        SmartDashboard.putBoolean("Vision/" + cameraName + "/Connected", camera.isConnected());
+        SmartDashboard.putBoolean("Vision/" + cameraName + "/FreshFrame", isHealthy());
+        SmartDashboard.putBoolean("Vision/" + cameraName + "/HasTargets", isHealthy() && latest.hasTargets());
         SmartDashboard.putNumber(
-            "Vision/FrameAgeSeconds",
+            "Vision/" + cameraName + "/FrameAgeSeconds",
             latest == null ? -1.0 : Timer.getFPGATimestamp() - lastFrameTime
         );
-        SmartDashboard.putNumber("Vision/Passed", passedCount);
-        SmartDashboard.putNumber("Vision/Rejected", rejectedCount);
-        SmartDashboard.putNumber("Vision/Fused", fusedCount);
-        SmartDashboard.putString("Vision/LastResult", lastReason);
+        SmartDashboard.putNumber("Vision/" + cameraName + "/Passed", passedCount);
+        SmartDashboard.putNumber("Vision/" + cameraName + "/Rejected", rejectedCount);
+        SmartDashboard.putNumber("Vision/" + cameraName + "/Fused", fusedCount);
+        SmartDashboard.putString("Vision/" + cameraName + "/LastResult", lastReason);
     }
 
     private void processPose(PhotonPipelineResult frame) {
