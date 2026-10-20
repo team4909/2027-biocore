@@ -41,6 +41,7 @@ public final class VisionConstants {
     public static final double AIM_MAX_RAD_PER_S = 0.5;
     public static final double AIM_TOLERANCE_RAD = Units.degreesToRadians(2.0);
     public static final String FRONT_CAMERA_NAME = "front-tags";
+    
     public static final Transform3d FRONT_ROBOT_TO_CAMERA =
         new Transform3d(
             new Translation3d(0.28, 0.0, 0.55),
