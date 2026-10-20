@@ -70,15 +70,15 @@ public class RobotContainer {
                 SmartDashboard.putNumber("Auto/HeadingDeg",drivetrain.getState().Pose.getRotation().getDegrees());
         configureBindings();
     }
-    public VisionSubsystem frontVision = new VisionSubsystem(
-        VisionConstants.FRONT_CAMERA_NAME,
-        VisionConstants.FRONT_ROBOT_TO_CAMERA,
+    public VisionSubsystem frontleftVision = new VisionSubsystem(
+        VisionConstants.FRONTLEFT_CAMERA_NAME,
+        VisionConstants.FRONTLEFT_ROBOT_TO_CAMERA,
         drivetrain::addVisionMeasurement,
     () -> drivetrain.getState().Pose    );
 
-    public VisionSubsystem backVision = new VisionSubsystem(
-        VisionConstants.BACK_CAMERA_NAME,
-        VisionConstants.BACK_ROBOT_TO_CAMERA,
+    public VisionSubsystem frontrightVision = new VisionSubsystem(
+        VisionConstants.FRONTRIGHT_CAMERA_NAME,
+        VisionConstants.FRONTRIGHT_ROBOT_TO_CAMERA,
         drivetrain::addVisionMeasurement,
         () -> drivetrain.getState().Pose    
     );

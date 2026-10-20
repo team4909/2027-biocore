@@ -10,7 +10,7 @@ import edu.wpi.first.math.util.Units;
 public final class VisionConstants {
     private VisionConstants() {}
 
-    public static final String CAMERA_NAME = "front-tags";
+    public static final String CAMERA_NAME = "frontleftcam";
     public static final int APRILTAG_PIPELINE = 0;
     
     public static final Transform3d ROBOT_TO_CAMERA =
@@ -40,18 +40,18 @@ public final class VisionConstants {
     public static final double AIM_KP = 1.5;
     public static final double AIM_MAX_RAD_PER_S = 0.5;
     public static final double AIM_TOLERANCE_RAD = Units.degreesToRadians(2.0);
-    public static final String FRONT_CAMERA_NAME = "front-tags";
+    public static final String FRONTLEFT_CAMERA_NAME = "frontleftcam";
 
-    public static final Transform3d FRONT_ROBOT_TO_CAMERA =
+    public static final Transform3d FRONTLEFT_ROBOT_TO_CAMERA =
         new Transform3d(
-            new Translation3d(0.28, 0.0, 0.55),
+            new Translation3d(-0.245, 0.261, 0.55),
             new Rotation3d(0.0, Units.degreesToRadians(70), 0.0)
         );
 
-    public static final String BACK_CAMERA_NAME = "back-tags";
-    public static final Transform3d BACK_ROBOT_TO_CAMERA =
+    public static final String FRONTRIGHT_CAMERA_NAME = "frontrightcam";
+    public static final Transform3d FRONTRIGHT_ROBOT_TO_CAMERA =
         new Transform3d(
-            new Translation3d(-0.28, 0.0, 0.55),
+            new Translation3d(0.245, 0.0, 0.261),
             new Rotation3d(0.0, Units.degreesToRadians(70.0), 180.0)
         );
 }
