@@ -48,7 +48,7 @@ public class RobotContainer {
     private final CommandXboxController joystick = new CommandXboxController(0);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-    private final SwerveRequest.RobotCentric robotCentricDrive = new SwerveRequest.RobotCentric()
+    private final SwerveRequest.FieldCentric fieldCentricDrive = new SwerveRequest.FieldCentric()
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); 
 
     private SendableChooser<Command> autoChooser;
@@ -98,9 +98,7 @@ public class RobotContainer {
     private void driveRobotRelative(ChassisSpeeds speeds) {
         SmartDashboard.putNumber("Auto/RequestedOmega", speeds.omegaRadiansPerSecond);
         drivetrain.setControl(
-            robotCentricDrive
-                .withDeadband(0.0)
-                .withRotationalDeadband(0.0)
+            fieldCentricDrive
                 .withVelocityX(speeds.vxMetersPerSecond)
                 .withVelocityY(speeds.vyMetersPerSecond)
                 .withRotationalRate(speeds.omegaRadiansPerSecond)
