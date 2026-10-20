@@ -33,8 +33,8 @@ public class VisionSubsystem extends SubsystemBase {
 
     public record AimObservation(double bearingRadians, double distanceMeters) {}
 
-    private final PhotonCamera camera = new PhotonCamera(CAMERA_NAME);
-    private final PhotonPoseEstimator estimator =
+    private PhotonCamera camera = new PhotonCamera(CAMERA_NAME);
+    private PhotonPoseEstimator estimator =
         new PhotonPoseEstimator(FIELD_LAYOUT, ROBOT_TO_CAMERA);
     private final MeasurementConsumer consumer;
     private final Supplier<Pose2d> robotPose;

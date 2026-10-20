@@ -74,15 +74,15 @@ public class RobotContainer {
         VisionConstants.FRONT_CAMERA_NAME,
         VisionConstants.FRONT_ROBOT_TO_CAMERA,
         drivetrain::addVisionMeasurement,
-        drivetrain::getPose
-    );
+    () -> drivetrain.getState().Pose    );
 
     public VisionSubsystem backVision = new VisionSubsystem(
         VisionConstants.BACK_CAMERA_NAME,
         VisionConstants.BACK_ROBOT_TO_CAMERA,
         drivetrain::addVisionMeasurement,
-        drivetrain::getPose
+        () -> drivetrain.getState().Pose    
     );
+
     private void configureNamedCommands() {
         NamedCommands.registerCommand("Spin90", new TurnToHeading(drivetrain, 90.0));
         NamedCommands.registerCommand("Spin180", new TurnToHeading(drivetrain, 180.0));
