@@ -25,6 +25,7 @@ WPILib 2026 Java robot for FRC team 4909. The repo is named "2027-biocore", but 
 - Register named commands in `RobotContainer.configureNamedCommands()` before `configureAutoBuilder()` runs.
 - Alliance mirroring is manual, not automatic: the `shouldFlipPath` supplier is the SmartDashboard "Manual Mirror Override" chooser, defaulting to "Don't Mirror (Blue)". Autos do not flip for red alliance unless that option is selected.
 - `frcStaticFileDeploy` uses `deleteOldFiles = false`, so renamed/removed deploy assets linger on the roboRIO.
+- `RobotContainer.driveRobotRelative()` applies PathPlanner's robot-relative `ChassisSpeeds` through `robotCentricDrive` (`SwerveRequest.RobotCentric`, zeroed deadbands) — don't confuse it with the operator's `SwerveRequest.FieldCentric` `drive` request.
 - `RobotContainer.driveRobotRelative()` feeds PathPlanner's robot-relative speeds into a `SwerveRequest.FieldCentric` (which interprets them as field-relative). If autos track poorly whenever the robot has nonzero heading, replace it with `SwerveRequest.ApplyRobotSpeeds`.
 
 ## Simulation and logs
