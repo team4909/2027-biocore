@@ -5,6 +5,10 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.VisionConstants.FRONTLEFT_CAMERA_NAME;
+import static frc.robot.VisionConstants.FRONTLEFT_ROBOT_TO_CAMERA;
+import static frc.robot.VisionConstants.FRONTRIGHT_CAMERA_NAME;
+import static frc.robot.VisionConstants.FRONTRIGHT_ROBOT_TO_CAMERA;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -70,18 +74,18 @@ public class RobotContainer {
                 SmartDashboard.putNumber("Auto/HeadingDeg",drivetrain.getState().Pose.getRotation().getDegrees());
         configureBindings();
     }
-    public VisionSubsystem frontleftVision = new VisionSubsystem(
-        VisionConstants.FRONTLEFT_CAMERA_NAME,
-        VisionConstants.FRONTLEFT_ROBOT_TO_CAMERA,
-        drivetrain::addVisionMeasurement,
+    private final VisionSubsystem frontLeftVision = new VisionSubsystem(
+        FRONTLEFT_CAMERA_NAME,
+        FRONTLEFT_ROBOT_TO_CAMERA,
+        (pose, timestamp, stdDevs) -> drivetrain.addVisionMeasurement(pose, timestamp, stdDevs),
         () -> drivetrain.getState().Pose
     );
 
-    public VisionSubsystem frontrightVision = new VisionSubsystem(
-        VisionConstants.FRONTRIGHT_CAMERA_NAME,
-        VisionConstants.FRONTRIGHT_ROBOT_TO_CAMERA,
-        drivetrain::addVisionMeasurement,
-        () -> drivetrain.getState().Pose    
+    private final VisionSubsystem frontRightVision = new VisionSubsystem(
+        FRONTRIGHT_CAMERA_NAME,
+        FRONTRIGHT_ROBOT_TO_CAMERA,
+        (pose, timestamp, stdDevs) -> drivetrain.addVisionMeasurement(pose, timestamp, stdDevs),
+        () -> drivetrain.getState().Pose
     );
 
     private void configureNamedCommands() {
