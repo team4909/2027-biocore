@@ -13,6 +13,7 @@ import static frc.robot.VisionConstants.FRONTRIGHT_ROBOT_TO_CAMERA;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -59,6 +60,10 @@ public class RobotContainer {
     private SendableChooser<Command> autoChooser;
     private final SendableChooser<Boolean> mirrorChooser = new SendableChooser<>();
 
+    //PID
+    private final PIDController xController = new PIDController(2.0, 0.0, 0.0); // Drives forward/back to target distance
+    private final PIDController yController = new PIDController(2.0, 0.0, 0.0); // Strafe left/right to center on tag
+    private final PIDController thetaController = new PIDController(3.0, 0.0, 0.0); // Rotate to face tag
 
     public RobotContainer() {
         configureNamedCommands();
@@ -157,7 +162,38 @@ public class RobotContainer {
         joystick.leftBumper().onTrue(new TurnToHeading(drivetrain, 90.0));
         joystick.rightBumper().onTrue(new TurnToHeading(drivetrain, 180.0));
 
+        //Cam test
+        joystick.rightTrigger().whileTrue(createAutoAlignCommand(18));
+
         drivetrain.registerTelemetry(logger::telemeterize);
+    }
+
+        //Camera Tests
+        private Command createAutoAlignCommand(int targetTagId) {
+        return drivetrain.applyRequest(() -> {
+            var optObs = frontLeftVision.getAimObservation(targetTagId);
+            if (optObs.isEmpty()) {
+                optObs = frontRightVision.getAimObservation(targetTagId);
+            }
+
+            if (optObs.isPresent()) {
+                var obs = optObs.get();
+                double targetDistance = 0.5; 
+                double distanceError = obs.distanceMeters() - targetDistance;
+                
+                double forwardSpeed = xController.calculate(distanceError, 0.0);
+                double strafeSpeed = yController.calculate(obs.bearingRadians(), 0.0);
+                double rotationSpeed = thetaController.calculate(obs.bearingRadians(), 0.0);
+
+                return drive.withVelocityX(forwardSpeed)
+                            .withVelocityY(-strafeSpeed)
+                            .withRotationalRate(rotationSpeed);
+            } else {
+                return drive.withVelocityX(0.0)
+                            .withVelocityY(0.0)
+                            .withRotationalRate(0.0);
+            }
+        });
     }
 
     public Command getAutonomousCommand() {
