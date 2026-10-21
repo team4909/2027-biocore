@@ -33,9 +33,10 @@ public class VisionSubsystem extends SubsystemBase {
 
     public record AimObservation(double bearingRadians, double distanceMeters) {}
 
-    private PhotonCamera camera = new PhotonCamera(CAMERA_NAME);
-    private PhotonPoseEstimator estimator =
-        new PhotonPoseEstimator(FIELD_LAYOUT, ROBOT_TO_CAMERA);
+    private final String cameraName;
+    private final Transform3d robotToCamera;
+    private final PhotonCamera camera;
+    private final PhotonPoseEstimator estimator;
     private final MeasurementConsumer consumer;
     private final Supplier<Pose2d> robotPose;
     private final Field2d field = new Field2d();
@@ -46,23 +47,20 @@ public class VisionSubsystem extends SubsystemBase {
     private int rejectedCount;
     private int fusedCount;
     private String lastReason = "No frame yet";
-    private String cameraName;
 
-public VisionSubsystem(String cameraName, Transform3d robotToCamera, MeasurementConsumer consumer, Supplier<Pose2d> robotPose) {
-    this.cameraName = cameraName;
-    this.consumer = consumer;
-    this.robotPose = robotPose;
-    
-    this.camera = new PhotonCamera(cameraName);
-    this.estimator = new PhotonPoseEstimator(FIELD_LAYOUT, robotToCamera);
-    
-    camera.setDriverMode(false);
-    camera.setPipelineIndex(APRILTAG_PIPELINE);
-}
+    public VisionSubsystem(String cameraName, Transform3d robotToCamera, 
+                           MeasurementConsumer consumer, Supplier<Pose2d> robotPose) {
+        this.cameraName = cameraName;
+        this.robotToCamera = robotToCamera;
+        this.consumer = consumer;
+        this.robotPose = robotPose;
+        
+        this.camera = new PhotonCamera(cameraName);
+        this.estimator = new PhotonPoseEstimator(FIELD_LAYOUT, robotToCamera);
+    }
 
     @Override
     public void periodic() {
-        // This is the only queue reader for this camera.
         var frames = new ArrayList<>(camera.getAllUnreadResults());
         frames.sort(Comparator.comparingDouble(PhotonPipelineResult::getTimestampSeconds));
         
@@ -80,11 +78,11 @@ public VisionSubsystem(String cameraName, Transform3d robotToCamera, Measurement
             }
             
             lastFrameTime = timestamp;
-            latest = frame; // Empty frames also replace the cache.
+            latest = frame;
             processPose(frame);
         }
         
-field.setRobotPose(robotPose.get());
+        field.setRobotPose(robotPose.get());
         SmartDashboard.putBoolean("Vision/" + cameraName + "/Connected", camera.isConnected());
         SmartDashboard.putBoolean("Vision/" + cameraName + "/FreshFrame", isHealthy());
         SmartDashboard.putBoolean("Vision/" + cameraName + "/HasTargets", isHealthy() && latest.hasTargets());
@@ -116,8 +114,6 @@ field.setRobotPose(robotPose.get());
 
         EstimatedRobotPose measurement = estimate.get();
         
-        // The 2026 targetsUsed field can include all visible tags,
-        // even for a single-tag fallback. Resolve actual contributors.
         List<PhotonTrackedTarget> used;
         if (multi) {
             var ids = frame.getMultiTagResult().get().fiducialIDsUsed;
@@ -149,7 +145,6 @@ field.setRobotPose(robotPose.get());
             
         double xyStdDev = (multi ? 0.25 : 0.70) - (1.0 + meanDistance * meanDistance / 20.0);
 
-        // A large angular deviation gives the gyro more authority.
         if (ENABLE_POSE_FUSION && CAMERA_TRANSFORM_VERIFIED) {
             consumer.accept(
                 pose,
@@ -242,7 +237,7 @@ field.setRobotPose(robotPose.get());
             if (target.getFiducialId() != tagId || !usableSingle(target)) continue;
             
             var robotToTarget = new Pose3d()
-                .transformBy(ROBOT_TO_CAMERA)
+                .transformBy(robotToCamera)
                 .transformBy(target.getBestCameraToTarget())
                 .getTranslation();
                 

@@ -74,7 +74,8 @@ public class RobotContainer {
         VisionConstants.FRONTLEFT_CAMERA_NAME,
         VisionConstants.FRONTLEFT_ROBOT_TO_CAMERA,
         drivetrain::addVisionMeasurement,
-    () -> drivetrain.getState().Pose    );
+        () -> drivetrain.getState().Pose
+    );
 
     public VisionSubsystem frontrightVision = new VisionSubsystem(
         VisionConstants.FRONTRIGHT_CAMERA_NAME,
