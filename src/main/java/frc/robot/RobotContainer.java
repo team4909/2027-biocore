@@ -168,7 +168,7 @@ public class RobotContainer {
         joystick.rightBumper().onTrue(new TurnToHeading(drivetrain, 180.0));
 
         //Cam test
-        joystick.rightTrigger().whileTrue(createAutoAlignCommand(18));
+        joystick.rightTrigger().whileTrue(createAutoAlignCommand(30));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
