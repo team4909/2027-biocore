@@ -124,6 +124,34 @@ public class RobotContainer {
         }
     }
 
+            //Camera Tests
+        private Command createAutoAlignCommand(int targetTagId) {
+        return drivetrain.applyRequest(() -> {
+            var optObs = frontLeftVision.getAimObservation(targetTagId);
+            if (optObs.isEmpty()) {
+                optObs = frontRightVision.getAimObservation(targetTagId);
+            }
+
+            if (optObs.isPresent()) {
+                var obs = optObs.get();
+                double targetDistance = 0.5; 
+                double distanceError = obs.distanceMeters() - targetDistance;
+                
+                double forwardSpeed = xController.calculate(distanceError, 0.0);
+                double strafeSpeed = yController.calculate(obs.bearingRadians(), 0.0);
+                double rotationSpeed = thetaController.calculate(obs.bearingRadians(), 0.0);
+
+                return drive.withVelocityX(forwardSpeed)
+                            .withVelocityY(-strafeSpeed)
+                            .withRotationalRate(rotationSpeed);
+            } else {
+                return drive.withVelocityX(0.0)
+                            .withVelocityY(0.0)
+                            .withRotationalRate(0.0);
+            }
+        });
+    }
+    
     private void driveRobotRelative(ChassisSpeeds speeds) {
         SmartDashboard.putNumber("Auto/RequestedOmega", speeds.omegaRadiansPerSecond);
         drivetrain.setControl(
@@ -173,33 +201,7 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
-        //Camera Tests
-        private Command createAutoAlignCommand(int targetTagId) {
-        return drivetrain.applyRequest(() -> {
-            var optObs = frontLeftVision.getAimObservation(targetTagId);
-            if (optObs.isEmpty()) {
-                optObs = frontRightVision.getAimObservation(targetTagId);
-            }
 
-            if (optObs.isPresent()) {
-                var obs = optObs.get();
-                double targetDistance = 0.5; 
-                double distanceError = obs.distanceMeters() - targetDistance;
-                
-                double forwardSpeed = xController.calculate(distanceError, 0.0);
-                double strafeSpeed = yController.calculate(obs.bearingRadians(), 0.0);
-                double rotationSpeed = thetaController.calculate(obs.bearingRadians(), 0.0);
-
-                return drive.withVelocityX(forwardSpeed)
-                            .withVelocityY(-strafeSpeed)
-                            .withRotationalRate(rotationSpeed);
-            } else {
-                return drive.withVelocityX(0.0)
-                            .withVelocityY(0.0)
-                            .withRotationalRate(0.0);
-            }
-        });
-    }
 
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();

@@ -39,13 +39,13 @@ public final class VisionConstants {
     public static final Transform3d FRONTLEFT_ROBOT_TO_CAMERA =
         new Transform3d(
             new Translation3d(-0.245, 0.261, 0.55),
-            new Rotation3d(0.0, Units.degreesToRadians(70), 0.0)
+            new Rotation3d(Units.degreesToRadians(0.0), Units.degreesToRadians(70), Units.degreesToRadians(180.0))
         );
 
     public static final String FRONTRIGHT_CAMERA_NAME = "frontrightcam";
     public static final Transform3d FRONTRIGHT_ROBOT_TO_CAMERA =
         new Transform3d(
             new Translation3d(0.245, 0.261, 0.55),
-            new Rotation3d(0.0, Units.degreesToRadians(70.0), 180.0)
+            new Rotation3d(Units.degreesToRadians(0.0), Units.degreesToRadians(70.0), Units.degreesToRadians(180.0))
         );
 }
