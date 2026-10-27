@@ -24,7 +24,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-
+import frc.robot.commands.AimAtTag;
 import frc.robot.commands.TurnToHeading;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -36,6 +36,10 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+
+//Vision tests
+import frc.robot.commands.AimAtTag;
+import frc.robot.VisionConstants;
 
 public class RobotContainer {
     
@@ -65,6 +69,7 @@ public class RobotContainer {
     private final PIDController yController = new PIDController(2.0, 0.0, 0.0); // Strafe left/right to center on tag
     private final PIDController thetaController = new PIDController(3.0, 0.0, 0.0); // Rotate to face tag
 
+
     public RobotContainer() {
         configureNamedCommands();
         SmartDashboard.putNumber("Auto/HeadingDeg", 0.0);
@@ -92,7 +97,7 @@ public class RobotContainer {
         (pose, timestamp, stdDevs) -> drivetrain.addVisionMeasurement(pose, timestamp, stdDevs),
         () -> drivetrain.getState().Pose
     );
-
+    
     private void configureNamedCommands() {
         NamedCommands.registerCommand("Spin90", new TurnToHeading(drivetrain, 90.0));
         NamedCommands.registerCommand("Spin180", new TurnToHeading(drivetrain, 180.0));
