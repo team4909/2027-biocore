@@ -24,7 +24,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.AimAtTag;
 import frc.robot.commands.TurnToHeading;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -38,7 +37,6 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 //Vision tests
-import frc.robot.commands.AimAtTag;
 import frc.robot.VisionConstants;
 
 public class RobotContainer {
@@ -125,7 +123,7 @@ public class RobotContainer {
     }
 
             //Camera Tests
-        private Command createAutoAlignCommand(int targetTagId) {
+        private Command AutoAlignCommand(int targetTagId) {
         return drivetrain.applyRequest(() -> {
             var optObs = frontLeftVision.getAimObservation(targetTagId);
             if (optObs.isEmpty()) {
@@ -151,7 +149,7 @@ public class RobotContainer {
             }
         });
     }
-    
+
     private void driveRobotRelative(ChassisSpeeds speeds) {
         SmartDashboard.putNumber("Auto/RequestedOmega", speeds.omegaRadiansPerSecond);
         drivetrain.setControl(
@@ -196,7 +194,7 @@ public class RobotContainer {
         joystick.rightBumper().onTrue(new TurnToHeading(drivetrain, 180.0));
 
         //Cam test
-        joystick.rightTrigger().whileTrue(createAutoAlignCommand(30));
+        joystick.rightTrigger().whileTrue(AutoAlignCommand(30));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }

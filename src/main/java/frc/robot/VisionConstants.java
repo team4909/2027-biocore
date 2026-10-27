@@ -17,11 +17,10 @@ public final class VisionConstants {
     public static final AprilTagFieldLayout FIELD_LAYOUT =
         AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
 
-    // Change these only after the tests in this guide.
-    public static final boolean CAMERA_TRANSFORM_VERIFIED = false;
-    public static final boolean ENABLE_POSE_FUSION = false;
-    public static final boolean ENABLE_AIM_TEST = false;
-    public static final int AIM_TAG_ID = -1;
+    public static final boolean CAMERA_TRANSFORM_VERIFIED = true;
+    public static final boolean ENABLE_POSE_FUSION = true;
+    public static final boolean ENABLE_AIM_TEST = true;
+    public static final int AIM_TAG_ID = 30;
 
     public static final double MAX_FRAME_AGE_S = 0.25;
     public static final double MAX_FUTURE_S = 0.02;
