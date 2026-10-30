@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
+import frc.robot.commands.TurnToHeading;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
@@ -31,6 +32,7 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 public class RobotContainer {
+    
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); 
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); 
 
@@ -54,7 +56,8 @@ public class RobotContainer {
 
     public RobotContainer() {
         configureNamedCommands();
-
+        SmartDashboard.putNumber("Auto/HeadingDeg", 0.0);
+        SmartDashboard.putNumber("Auto/RequestedOmega", 0.0);
         mirrorChooser.setDefaultOption("Don't Mirror (Blue)", false);
         mirrorChooser.addOption("Mirror Path (Red)", true);
         SmartDashboard.putData("Manual Mirror Override", mirrorChooser);
@@ -62,13 +65,13 @@ public class RobotContainer {
         configureAutoBuilder();
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Mode", autoChooser);
-
+                SmartDashboard.putNumber("Auto/HeadingDeg",drivetrain.getState().Pose.getRotation().getDegrees());
         configureBindings();
     }
 
     private void configureNamedCommands() {
-        // Register your PathPlanner named commands here before configuring AutoBuilder
-        // e.g. NamedCommands.registerCommand("Intake", intakeSubsystem.intakeCommand());
+        NamedCommands.registerCommand("Spin90", new TurnToHeading(drivetrain, 90.0));
+        NamedCommands.registerCommand("Spin180", new TurnToHeading(drivetrain, 180.0));
     }
 
     private void configureAutoBuilder() {
@@ -77,11 +80,11 @@ public class RobotContainer {
             AutoBuilder.configure(
                 () -> drivetrain.getState().Pose,
                 drivetrain::resetPose,
-                drivetrain::getRobotRelativeSpeeds, // Make sure this helper is added in CommandSwerveDrivetrain.java!
+                drivetrain::getRobotRelativeSpeeds,
                 (speeds, feedforwards) -> driveRobotRelative(speeds),
                 new PPHolonomicDriveController(
-                    new PIDConstants(5.0, 0.0, 0.0),
-                    new PIDConstants(5.0, 0.0, 0.0)
+                    new PIDConstants(5.0, 0.0, 0.0), //Drive PID
+                    new PIDConstants(6.0, 0.0, 0.4) //Rotation PID
                 ),
                 config,
                 () -> mirrorChooser.getSelected() != null ? mirrorChooser.getSelected() : false,
@@ -93,12 +96,14 @@ public class RobotContainer {
     }
 
     private void driveRobotRelative(ChassisSpeeds speeds) {
+        SmartDashboard.putNumber("Auto/RequestedOmega", speeds.omegaRadiansPerSecond);
         drivetrain.setControl(
             fieldCentricDrive
                 .withVelocityX(speeds.vxMetersPerSecond)
                 .withVelocityY(speeds.vyMetersPerSecond)
                 .withRotationalRate(speeds.omegaRadiansPerSecond)
         );
+
     }
 
     private void configureBindings() {
@@ -128,6 +133,10 @@ public class RobotContainer {
 
         // Reset heading
         joystick.back().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        
+        // 90 degrees is LB, 180 is RB
+        joystick.leftBumper().onTrue(new TurnToHeading(drivetrain, 90.0));
+        joystick.rightBumper().onTrue(new TurnToHeading(drivetrain, 180.0));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
