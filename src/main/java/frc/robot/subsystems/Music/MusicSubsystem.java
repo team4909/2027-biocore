@@ -8,6 +8,20 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import java.util.List;
 
+    //********************************************************************************//
+    // This was kind of a side project, but I wanted to see if I could get            //
+    // the music subsystem working. It is a fun little addition to the robot, and     //
+    //  it is a good way to test the capabilities of the swerve drive platform.       //
+    //  Also, telling people that your motors can play music is a good way to get     //
+    //  them interested in the robot.                                                 //
+    //  Who knows, maybe it will even help us win some awards at competitions.        //
+    //  or at least recruit some new members to the team.                             //
+    //  We always need more members.                                                  //
+    //  In hind sight, I probably should have put this in a feature branch,           //
+    //  but who cares?                                                                //
+    //  Here comes: THE MUSIC SUBSYSTEM!                                              //
+    //********************************************************************************//
+
 public class MusicSubsystem extends SubsystemBase {
     private final Orchestra orchestra;
     private final List<TalonFX> motors;
