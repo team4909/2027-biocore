@@ -6,7 +6,10 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.List;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -20,8 +23,10 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
+import frc.robot.commands.TurnToHeading;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Music.MusicSubsystem;
 
 // PathPlanner Imports
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -31,6 +36,7 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 public class RobotContainer {
+    
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); 
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); 
 
@@ -41,20 +47,35 @@ public class RobotContainer {
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
+    //Telementry logger for the swerve drive platform, to be used in the SmartDashboard
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
+    //Joystick Declaration
     private final CommandXboxController joystick = new CommandXboxController(0);
 
+    //Make the DT
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     private final SwerveRequest.FieldCentric fieldCentricDrive = new SwerveRequest.FieldCentric()
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); 
 
+    //Choose auto and choose mirror.
     private SendableChooser<Command> autoChooser;
     private final SendableChooser<Boolean> mirrorChooser = new SendableChooser<>();
 
+    //Music subsystem
+    private final MusicSubsystem musicSubsystem = new MusicSubsystem(
+        List.of(
+            drivetrain.getModule(0).getDriveMotor(), // Front Left
+            drivetrain.getModule(1).getDriveMotor(), // Front Right
+            drivetrain.getModule(2).getDriveMotor(), // Back Left
+            drivetrain.getModule(3).getDriveMotor()  // Back Right
+        )
+    );
+
     public RobotContainer() {
         configureNamedCommands();
-
+        SmartDashboard.putNumber("Auto/HeadingDeg", 0.0);
+        SmartDashboard.putNumber("Auto/RequestedOmega", 0.0);
         mirrorChooser.setDefaultOption("Don't Mirror (Blue)", false);
         mirrorChooser.addOption("Mirror Path (Red)", true);
         SmartDashboard.putData("Manual Mirror Override", mirrorChooser);
@@ -62,13 +83,13 @@ public class RobotContainer {
         configureAutoBuilder();
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Mode", autoChooser);
-
+                SmartDashboard.putNumber("Auto/HeadingDeg",drivetrain.getState().Pose.getRotation().getDegrees());
         configureBindings();
     }
 
     private void configureNamedCommands() {
-        // Register your PathPlanner named commands here before configuring AutoBuilder
-        // e.g. NamedCommands.registerCommand("Intake", intakeSubsystem.intakeCommand());
+        NamedCommands.registerCommand("Spin90", new TurnToHeading(drivetrain, 90.0));
+        NamedCommands.registerCommand("Spin180", new TurnToHeading(drivetrain, 180.0));
     }
 
     private void configureAutoBuilder() {
@@ -77,11 +98,11 @@ public class RobotContainer {
             AutoBuilder.configure(
                 () -> drivetrain.getState().Pose,
                 drivetrain::resetPose,
-                drivetrain::getRobotRelativeSpeeds, // Make sure this helper is added in CommandSwerveDrivetrain.java!
+                drivetrain::getRobotRelativeSpeeds,
                 (speeds, feedforwards) -> driveRobotRelative(speeds),
                 new PPHolonomicDriveController(
-                    new PIDConstants(5.0, 0.0, 0.0),
-                    new PIDConstants(5.0, 0.0, 0.0)
+                    new PIDConstants(5.0, 0.0, 0.0), //Drive PID
+                    new PIDConstants(6.0, 0.0, 0.4) //Rotation PID
                 ),
                 config,
                 () -> mirrorChooser.getSelected() != null ? mirrorChooser.getSelected() : false,
@@ -93,12 +114,14 @@ public class RobotContainer {
     }
 
     private void driveRobotRelative(ChassisSpeeds speeds) {
+        SmartDashboard.putNumber("Auto/RequestedOmega", speeds.omegaRadiansPerSecond);
         drivetrain.setControl(
             fieldCentricDrive
                 .withVelocityX(speeds.vxMetersPerSecond)
                 .withVelocityY(speeds.vyMetersPerSecond)
                 .withRotationalRate(speeds.omegaRadiansPerSecond)
         );
+
     }
 
     private void configureBindings() {
@@ -128,6 +151,15 @@ public class RobotContainer {
 
         // Reset heading
         joystick.back().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        
+        // 90 degrees is LB, 180 is RB
+        joystick.leftBumper().onTrue(new TurnToHeading(drivetrain, 90.0));
+        joystick.rightBumper().onTrue(new TurnToHeading(drivetrain, 180.0));
+
+        // Music subsystem controls
+        joystick.povUp().onTrue(Commands.runOnce(() -> 
+            musicSubsystem.playMusic("mario.chrp"), musicSubsystem)
+        );
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
