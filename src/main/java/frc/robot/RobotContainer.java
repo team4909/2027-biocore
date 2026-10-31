@@ -6,7 +6,10 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.List;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -23,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.TurnToHeading;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Music.MusicSubsystem;
 
 // PathPlanner Imports
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -43,16 +47,30 @@ public class RobotContainer {
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
+    //Telementry logger for the swerve drive platform, to be used in the SmartDashboard
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
+    //Joystick Declaration
     private final CommandXboxController joystick = new CommandXboxController(0);
 
+    //Make the DT
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     private final SwerveRequest.FieldCentric fieldCentricDrive = new SwerveRequest.FieldCentric()
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); 
 
+    //Choose auto and choose mirror.
     private SendableChooser<Command> autoChooser;
     private final SendableChooser<Boolean> mirrorChooser = new SendableChooser<>();
+
+    //Music subsystem
+    private final MusicSubsystem musicSubsystem = new MusicSubsystem(
+        List.of(
+            drivetrain.getModule(0).getDriveMotor(), // Front Left
+            drivetrain.getModule(1).getDriveMotor(), // Front Right
+            drivetrain.getModule(2).getDriveMotor(), // Back Left
+            drivetrain.getModule(3).getDriveMotor()  // Back Right
+        )
+    );
 
     public RobotContainer() {
         configureNamedCommands();
@@ -137,6 +155,11 @@ public class RobotContainer {
         // 90 degrees is LB, 180 is RB
         joystick.leftBumper().onTrue(new TurnToHeading(drivetrain, 90.0));
         joystick.rightBumper().onTrue(new TurnToHeading(drivetrain, 180.0));
+
+        // Music subsystem controls
+        joystick.povUp().onTrue(Commands.runOnce(() -> 
+            musicSubsystem.playMusic("mario.chrp"), musicSubsystem)
+        );
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
