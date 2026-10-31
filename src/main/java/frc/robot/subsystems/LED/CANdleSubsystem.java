@@ -2,16 +2,19 @@ package frc.robot.subsystems.LED;
 
 import com.ctre.phoenix6.hardware.CANdle;
 import com.ctre.phoenix6.configs.CANdleConfiguration;
-import com.ctre.phoenix6.signals.*;
+import com.ctre.phoenix6.controls.SolidColor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import com.ctre.phoenix6.controls.SolidColor;
+import com.ctre.phoenix6.signals.RGBWColor;
 
 public class CANdleSubsystem extends SubsystemBase {
     private final CANdle candle;
-    private int totalLEDs = 70; //SRIHAAS!!! CHANGE THIS TO THE NUMBER OF LEDS YOU HAVE!
+    private final int totalLEDs = 72; //SRIHAAS!!! CHANGE THIS TO THE NUMBER OF LEDS YOU HAVE! (Made it a multiple of 4)
     private final int sectionLength = totalLEDs / 4; //Chris said 4 sections is fine
+
+    // Cache to prevent spamming the CAN bus every 20ms
+    private final int[][] lastSectionColors = new int[4][3];
 
     public enum LEDmode {
         DISABLED_SWEEP,
@@ -23,7 +26,7 @@ public class CANdleSubsystem extends SubsystemBase {
     private boolean canBusHealthy = true;
     private boolean batteryHealthy = true;
     private boolean autoReady = false;
-    private boolean[] cameraHasTargets = new boolean[]{false, false, false, false};
+    private final boolean[] cameraHasTargets = new boolean[]{false, false, false, false};
 
     public CANdleSubsystem(int canID) {
         candle = new CANdle(canID);
@@ -31,20 +34,45 @@ public class CANdleSubsystem extends SubsystemBase {
         CANdleConfiguration config = new CANdleConfiguration();
         config.LED.BrightnessScalar = 0.7; 
         candle.getConfigurator().apply(config);
+
+        // Initialize cache with invalid colors so the first update forces a write
+        for (int i = 0; i < 4; i++) {
+            lastSectionColors[i][0] = -1;
+            lastSectionColors[i][1] = -1;
+            lastSectionColors[i][2] = -1;
+        }
     }
+
     public void setSectionColor(int sectionIndex, int r, int g, int b) {
         if (sectionIndex < 0 || sectionIndex >= 4) return;
+
+        // Skip if color hasn't changed (saves CAN bandwidth)
+        if (lastSectionColors[sectionIndex][0] == r &&
+            lastSectionColors[sectionIndex][1] == g &&
+            lastSectionColors[sectionIndex][2] == b) {
+            return;
+        }
+
+        lastSectionColors[sectionIndex][0] = r;
+        lastSectionColors[sectionIndex][1] = g;
+        lastSectionColors[sectionIndex][2] = b;
+
         int startIndex = sectionIndex * sectionLength;
         int endIndex = startIndex + sectionLength - 1;
         candle.setControl(new SolidColor(startIndex, endIndex).withColor(new RGBWColor(r, g, b, 0)));
     }
 
     public void setSolidColor(int r, int g, int b) {
+        for (int i = 0; i < 4; i++) {
+            lastSectionColors[i][0] = r;
+            lastSectionColors[i][1] = g;
+            lastSectionColors[i][2] = b;
+        }
         candle.setControl(new SolidColor(0, totalLEDs - 1).withColor(new RGBWColor(r, g, b, 0)));
     }
 
     public void clearLEDs() {
-        candle.setControl(new SolidColor(0, totalLEDs - 1).withColor(new RGBWColor(0, 0, 0, 0)));
+        setSolidColor(0, 0, 0);
     }
     
     @Override
@@ -59,6 +87,7 @@ public class CANdleSubsystem extends SubsystemBase {
             runTeleopLEDs();
         }
     }
+
     private void runPreMatchSweep() {
         // Section 1: Amber (Robot / CAN Health)
         if (canBusHealthy) {
