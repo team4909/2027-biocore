@@ -10,7 +10,7 @@ import com.ctre.phoenix6.signals.RGBWColor;
 
 public class CANdleSubsystem extends SubsystemBase {
     private final CANdle candle;
-    private final int totalLEDs = 72; //SRIHAAS!!! CHANGE THIS TO THE NUMBER OF LEDS YOU HAVE! (Made it a multiple of 4)
+    private final int totalLEDs = 120; //SRIHAAS!!! CHANGE THIS TO THE NUMBER OF LEDS YOU HAVE! (Made it a multiple of 4)
     private final int sectionLength = totalLEDs / 4; //Chris said 4 sections is fine
 
     // Cache to prevent spamming the CAN bus every 20ms
@@ -43,7 +43,28 @@ public class CANdleSubsystem extends SubsystemBase {
         }
     }
 
+    public void setTeleopZone(int ZoneIndex, int r, int g, int b) {
+        if (ZoneIndex < 0 || ZoneIndex >= 2) return;
+
+        int teleopSectionLength = totalLEDs / 2;
+        int startIndex = ZoneIndex * teleopSectionLength;
+        int endIndex = startIndex + teleopSectionLength - 1;
+
+        // Skip if color hasn't changed (saves CAN bandwidth)
+        if (lastSectionColors[ZoneIndex][0] == r &&
+            lastSectionColors[ZoneIndex][1] == g &&
+            lastSectionColors[ZoneIndex][2] == b) {
+            return;
+        }
+
+        lastSectionColors[ZoneIndex][0] = r;
+        lastSectionColors[ZoneIndex][1] = g;
+        lastSectionColors[ZoneIndex][2] = b;
+
+        candle.setControl(new SolidColor(startIndex, endIndex).withColor(new RGBWColor(r, g, b, 0)));
+    }
     public void setSectionColor(int sectionIndex, int r, int g, int b) {
+        
         if (sectionIndex < 0 || sectionIndex >= 4) return;
 
         // Skip if color hasn't changed (saves CAN bandwidth)
@@ -88,6 +109,7 @@ public class CANdleSubsystem extends SubsystemBase {
         }
     }
 
+    //Disabled functions
     private void runPreMatchSweep() {
         // Section 1: Amber (Robot / CAN Health)
         if (canBusHealthy) {
@@ -118,12 +140,35 @@ public class CANdleSubsystem extends SubsystemBase {
         }
     }
 
+    //Autonomous functions
     private void runAutoLEDs() {
-        // Auto logic: Tag visibility across 4 sections
+
+        
     }
 
+    //Teleop functions
     private void runTeleopLEDs() {
-        // Teleop logic: Game piece status / ready to score
+
+        int activeCameras = 0;
+        //Check how many cameras have targets
+        for (boolean hasTarget : cameraHasTargets) {
+            if (hasTarget) activeCameras++;
+        }
+
+        //Fault overide: Red, if CAN bus or battery is not healthy, override all other LED modes
+        if (!canBusHealthy || !batteryHealthy) {
+            setSolidColor(255, 0, 0); // Red fault
+            return;
+        }
+
+        if (activeCameras == 2) {
+            setTeleopZone(1, 232, 0, 232); // Bright Purple, 2 tags
+        } else if (activeCameras == 1) {
+            setTeleopZone(1, 128, 0, 128); // Purple, 1 tag
+        }
+        else {
+            setTeleopZone(1, 30, 0, 30);   // Dim purple waiting for tags
+        }
     }
 
     public void setCanBusHealthy(boolean healthy) { this.canBusHealthy = healthy; }
