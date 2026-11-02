@@ -158,14 +158,26 @@ public class CANdleSubsystem extends SubsystemBase {
 
     //Teleop functions
     private void runTeleopLEDs() {
-        double currentSpeed = speedSupplier.getAsDouble();
-        int activeCameras = 0;
-
         //Fault overide: Red, if CAN bus or battery is not healthy, override all other LED modes
         if (!canBusHealthy || !batteryHealthy) {
             setSolidColor(255, 0, 0); // Red fault
             return;
         }
+
+        //Zone 0 out of 2
+        double currentSpeed = speedSupplier.getAsDouble();
+
+        //Map 0-5 MPS to a RGB value
+        double zoneOneGreenColor = 50.0 + (currentSpeed / 5.0) * (255.0 - 50.0);
+        //Get the final color
+        int green = (int) Math.round(
+            Math.max(0.0, Math.min(255.0, zoneOneGreenColor))
+        );
+        
+        setTeleopZone(0, 0, green,0 );
+
+        //Zone 1 out of 2
+        int activeCameras = 0;
 
         //Check how many cameras have targets
         for (boolean hasTarget : cameraHasTargets) {
