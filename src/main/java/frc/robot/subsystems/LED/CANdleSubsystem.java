@@ -7,12 +7,19 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.ctre.phoenix6.signals.RGBWColor;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import java.util.function.DoubleSupplier;
 
 public class CANdleSubsystem extends SubsystemBase {
     private final CANdle candle;
     private final int totalLEDs = 120; //SRIHAAS!!! CHANGE THIS TO THE NUMBER OF LEDS YOU HAVE! (Made it a multiple of 4)
     private final int sectionLength = totalLEDs / 4; //Chris said 4 sections is fine
 
+    //Pull drivetrain speeds
+    ChassisSpeeds speeds = m_drivetrain.getState().Speeds;
+    double vx = speed.vxMetersPerSecond;
+    double vy = speed.vyMetersPerSecond;
+    double omega = speed.omegaRadiansPerSecond;
     // Cache to prevent spamming the CAN bus every 20ms
     private final int[][] lastSectionColors = new int[4][3];
 
@@ -27,9 +34,12 @@ public class CANdleSubsystem extends SubsystemBase {
     private boolean batteryHealthy = true;
     private boolean autoReady = false;
     private final boolean[] cameraHasTargets = new boolean[]{false, false, false, false};
+    private final DoubleSupplier speedSupplier;
 
-    public CANdleSubsystem(int canID) {
+    public CANdleSubsystem(int canID, DoubleSupplier speedSupplier) {
         candle = new CANdle(canID);
+        this.candle = new CANdle(canID);
+        this.speedSupplier = speedSupplier;
 
         CANdleConfiguration config = new CANdleConfiguration();
         config.LED.BrightnessScalar = 0.7; 
