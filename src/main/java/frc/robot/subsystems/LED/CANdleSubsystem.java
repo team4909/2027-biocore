@@ -11,15 +11,16 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import java.util.function.DoubleSupplier;
 
 public class CANdleSubsystem extends SubsystemBase {
-    private final CANdle candle;
+    private CANdle candle;
     private final int totalLEDs = 120; //SRIHAAS!!! CHANGE THIS TO THE NUMBER OF LEDS YOU HAVE! (Made it a multiple of 4)
     private final int sectionLength = totalLEDs / 4; //Chris said 4 sections is fine
 
-    //Pull drivetrain speeds
-    ChassisSpeeds speeds = m_drivetrain.getState().Speeds;
-    double vx = speed.vxMetersPerSecond;
-    double vy = speed.vyMetersPerSecond;
-    double omega = speed.omegaRadiansPerSecond;
+    // Pull drivetrain speeds
+    // ChassisSpeeds speeds = m_drivetrain.getState().Speeds;
+    // double vx = speed.vxMetersPerSecond;
+    // double vy = speed.vyMetersPerSecond;
+    // double omega = speed.omegaRadiansPerSecond;
+
     // Cache to prevent spamming the CAN bus every 20ms
     private final int[][] lastSectionColors = new int[4][3];
 
@@ -38,7 +39,6 @@ public class CANdleSubsystem extends SubsystemBase {
 
     public CANdleSubsystem(int canID, DoubleSupplier speedSupplier) {
         candle = new CANdle(canID);
-        this.candle = new CANdle(canID);
         this.speedSupplier = speedSupplier;
 
         CANdleConfiguration config = new CANdleConfiguration();
@@ -158,17 +158,18 @@ public class CANdleSubsystem extends SubsystemBase {
 
     //Teleop functions
     private void runTeleopLEDs() {
-
+        double currentSpeed = speedSupplier.getAsDouble();
         int activeCameras = 0;
-        //Check how many cameras have targets
-        for (boolean hasTarget : cameraHasTargets) {
-            if (hasTarget) activeCameras++;
-        }
 
         //Fault overide: Red, if CAN bus or battery is not healthy, override all other LED modes
         if (!canBusHealthy || !batteryHealthy) {
             setSolidColor(255, 0, 0); // Red fault
             return;
+        }
+
+        //Check how many cameras have targets
+        for (boolean hasTarget : cameraHasTargets) {
+            if (hasTarget) activeCameras++;
         }
 
         if (activeCameras == 2) {

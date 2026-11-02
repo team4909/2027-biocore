@@ -10,6 +10,7 @@ import java.util.List;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.Orchestra;
+import com.ctre.phoenix6.hardware.CANdle;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -26,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.TurnToHeading;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Drivetrain.CommandSwerveDrivetrain;
+import frc.robot.subsystems.LED.CANdleSubsystem;
 import frc.robot.subsystems.Music.MusicSubsystem;
 
 // PathPlanner Imports
@@ -61,6 +63,18 @@ public class RobotContainer {
     //Choose auto and choose mirror.
     private SendableChooser<Command> autoChooser;
     private final SendableChooser<Boolean> mirrorChooser = new SendableChooser<>();
+
+    // LED subsystem
+    public final CANdleSubsystem m_candle = new CANdleSubsystem(
+        15,
+        () -> {
+            var speeds = drivetrain.getState().Speeds;
+            return Math.hypot(
+                speeds.vxMetersPerSecond,
+                speeds.vyMetersPerSecond
+            );
+        }
+    );
 
     //Music subsystem
     private final MusicSubsystem musicSubsystem = new MusicSubsystem(
