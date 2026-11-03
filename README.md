@@ -364,10 +364,7 @@ Vision yaw corrections depend on correct camera transforms. Also note `TurnToHea
 ## Known issues and leftovers
 
 - `commands/Autos.java`, `commands/ExampleCommand.java`, `subsystems/ExampleSubsystem.java`, and `Constants.java` are unused WPILib template leftovers.
-- `subsystems/vision/VisonConsumer.java` is empty and misspelled; the real `VisionConsumer` interface lives inside `Vision.java`.
-- `VisionIOLimelight.java` is unused (no Limelight on the robot).
 - `driveRobotRelative(...)` mixes robot-relative speeds with a field-centric request (see above).
 - PathPlanner mirroring is manual, not alliance-aware.
 - AdvantageKit, ChoreoLib, and PhotonLib are vendordeps. Only PhotonLib is actively used; AK logging and Choreo trajectories are not integrated.
 - The vision camera transforms are placeholders until measured.
-- `TurnToHeading` has no velocity feedforward and does not clamp its output to the profiled max angular velocity; it can overshoot or hunt, and it silently times out after 5 seconds.
