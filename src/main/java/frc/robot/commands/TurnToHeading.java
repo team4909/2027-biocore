@@ -11,13 +11,14 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import edu.wpi.first.math.MathUtil;
 
 
 public class TurnToHeading extends Command {
 
     private final CommandSwerveDrivetrain drivetrain;
     private final double relativeDegrees;
-
+    private final double maxAngularVelocity = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
     private final SwerveRequest.RobotCentric turnRequest = new SwerveRequest.RobotCentric();
 
     private final ProfiledPIDController controller = new ProfiledPIDController(
@@ -43,7 +44,7 @@ public class TurnToHeading extends Command {
 
     @Override
     public void initialize() {
-        Rotation2d current = drivetrain.getState().Pose.getRotation();
+        Rotation2d current = drivetrain.getState().RawHeading;
         goal = current.plus(Rotation2d.fromDegrees(relativeDegrees));
         controller.reset(current.getRadians());
         startTime = Timer.getFPGATimestamp();
@@ -51,8 +52,11 @@ public class TurnToHeading extends Command {
 
     @Override
     public void execute() {
-        double current = drivetrain.getState().Pose.getRotation().getRadians();
-        double output = controller.calculate(current, goal.getRadians());
+        double current = drivetrain.getState().RawHeading.getRadians();
+        double output = controller.calculate(current, goal.getRadians())
+            + controller.getSetpoint().velocity;
+
+        output = MathUtil.clamp(output, -maxAngularVelocity, maxAngularVelocity);
 
         SmartDashboard.putNumber("Auto/RequestedOmega", output);
         SmartDashboard.putNumber("Auto/TurnErrorDeg", Math.toDegrees(goal.minus(drivetrain.getState().Pose.getRotation()).getRadians()));

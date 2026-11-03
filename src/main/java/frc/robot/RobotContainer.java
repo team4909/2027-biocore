@@ -92,8 +92,8 @@ public class RobotContainer {
     }
 
     private void configureNamedCommands() {
-        NamedCommands.registerCommand("Spin90", new TurnToHeading(drivetrain, 90.0));
-        NamedCommands.registerCommand("Spin180", new TurnToHeading(drivetrain, 180.0));
+        // NamedCommands.registerCommand("Spin90", new TurnToHeading(drivetrain, 90.0));
+        // NamedCommands.registerCommand("Spin180", new TurnToHeading(drivetrain, 180.0));
     }
 
     private void configureAutoBuilder() {
@@ -156,9 +156,9 @@ public class RobotContainer {
         // Reset heading
         joystick.back().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
         
-        // 90 degrees is LB, 180 is RB
-        joystick.leftBumper().onTrue(new TurnToHeading(drivetrain, 90.0));
-        joystick.rightBumper().onTrue(new TurnToHeading(drivetrain, 180.0));
+        // 90 degrees is LB, 180 is RB [UPDATE: Commented becuase it is unused]
+        // joystick.leftBumper().onTrue(new TurnToHeading(drivetrain, 90.0));
+        // joystick.rightBumper().onTrue(new TurnToHeading(drivetrain, 180.0));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
