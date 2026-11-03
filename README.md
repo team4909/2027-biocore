@@ -2,7 +2,7 @@
 
 FRC Team 4909's WPILib **2026** robot code for a CTRE Phoenix 6 swerve drivetrain with PathPlanner autonomous routines and PhotonVision AprilTag pose estimation.
 
-> **Repo name vs. season:** the repository is called `2027-biocore`, but `build.gradle`, `settings.gradle`, and `.wpilib/wpilib_preferences.json` all target the **2026** season (GradleRIO 2026.2.1, Java 17). Treat it as a 2026 robot.
+> **Repo name vs. season:** the repository is called `2027-biocore`, but `build.gradle`, `settings.gradle`, and `.wpilib/wpilib_preferences.json` all target the **2026** season (GradleRIO 2026.2.1, Java 17). Treat it as a 2026 robot. We will update the code to 2027, starting January 10th
 
 ---
 
