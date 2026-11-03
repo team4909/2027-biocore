@@ -34,9 +34,9 @@ public class VisionConstants {
   // ahead; add pitch (positive tilts the camera down) if they are angled.
   // TODO: measure these mounting positions on the real robot.
   public static Transform3d robotToFrontLeftCamera =
-      new Transform3d(0.30, 0.28, 0.50, new Rotation3d(0.0, 0.0, 0.0));
+      new Transform3d(-0.245, 0.261, 0.50, new Rotation3d(0.0, 0.0, 0.0));
   public static Transform3d robotToFrontRightCamera =
-      new Transform3d(0.30, -0.28, 0.50, new Rotation3d(0.0, 0.0, 0.0));
+      new Transform3d(0.245, 0.261, 0.50, new Rotation3d(0.0, 0.0, 0.0));
 
   // Basic filtering thresholds
   public static double maxAmbiguity = 0.3;
