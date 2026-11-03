@@ -10,11 +10,14 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -23,6 +26,11 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.TurnToHeading;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOPhotonVision;
+import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 
 // PathPlanner Imports
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -51,10 +59,17 @@ public class RobotContainer {
     private final SwerveRequest.FieldCentric fieldCentricDrive = new SwerveRequest.FieldCentric()
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); 
 
+    private final Vision vision = new Vision(
+        drivetrain::addVisionMeasurement,
+        createCameraIO(VisionConstants.frontLeftCameraName, VisionConstants.robotToFrontLeftCamera),
+        createCameraIO(VisionConstants.frontRightCameraName, VisionConstants.robotToFrontRightCamera)
+    );
+
     private SendableChooser<Command> autoChooser;
     private final SendableChooser<Boolean> mirrorChooser = new SendableChooser<>();
 
     public RobotContainer() {
+        CommandScheduler.getInstance().registerSubsystem(vision);
         configureNamedCommands();
         SmartDashboard.putNumber("Auto/HeadingDeg", 0.0);
         SmartDashboard.putNumber("Auto/RequestedOmega", 0.0);
@@ -67,6 +82,13 @@ public class RobotContainer {
         SmartDashboard.putData("Auto Mode", autoChooser);
                 SmartDashboard.putNumber("Auto/HeadingDeg",drivetrain.getState().Pose.getRotation().getDegrees());
         configureBindings();
+    }
+
+    private VisionIO createCameraIO(String name, Transform3d robotToCamera) {
+        if (RobotBase.isSimulation()) {
+            return new VisionIOPhotonVisionSim(name, robotToCamera, () -> drivetrain.getState().Pose);
+        }
+        return new VisionIOPhotonVision(name, robotToCamera);
     }
 
     private void configureNamedCommands() {

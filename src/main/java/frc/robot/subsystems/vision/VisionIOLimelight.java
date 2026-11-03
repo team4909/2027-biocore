@@ -29,6 +29,7 @@ import java.util.function.Supplier;
 
 /** IO implementation for real Limelight hardware. */
 public class VisionIOLimelight implements VisionIO {
+  private final String name;
   private final Supplier<Rotation2d> rotationSupplier;
   private final DoubleArrayPublisher orientationPublisher;
 
@@ -46,6 +47,7 @@ public class VisionIOLimelight implements VisionIO {
    */
   public VisionIOLimelight(String name, Supplier<Rotation2d> rotationSupplier) {
     var table = NetworkTableInstance.getDefault().getTable(name);
+    this.name = name;
     this.rotationSupplier = rotationSupplier;
     orientationPublisher = table.getDoubleArrayTopic("robot_orientation_set").publish();
     latencySubscriber = table.getDoubleTopic("tl").subscribe(0.0);
@@ -54,6 +56,11 @@ public class VisionIOLimelight implements VisionIO {
     megatag1Subscriber = table.getDoubleArrayTopic("botpose_wpiblue").subscribe(new double[] {});
     megatag2Subscriber =
         table.getDoubleArrayTopic("botpose_orb_wpiblue").subscribe(new double[] {});
+  }
+
+  @Override
+  public String getName() {
+    return name;
   }
 
   @Override

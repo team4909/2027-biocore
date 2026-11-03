@@ -16,27 +16,31 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
+import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
 import java.util.LinkedList;
 import java.util.List;
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.inputs.LoggableInputs;
-
-
-import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
-import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
-
-import com.ctre.phoenix6.Utils;
 
 public class Vision extends SubsystemBase {
   private final VisionConsumer consumer;
   private final VisionIO[] io;
   private final VisionIOInputs[] inputs;
   private final Alert[] disconnectedAlerts;
+  private final StructArrayPublisher<Pose3d>[] tagPosePublishers;
+  private final StructArrayPublisher<Pose3d>[] robotPosePublishers;
+  private final StructArrayPublisher<Pose3d>[] acceptedPosePublishers;
+  private final StructArrayPublisher<Pose3d>[] rejectedPosePublishers;
+  private final StructArrayPublisher<Pose3d> allTagPosePublisher;
+  private final StructArrayPublisher<Pose3d> allRobotPosePublisher;
+  private final StructArrayPublisher<Pose3d> allAcceptedPosePublisher;
+  private final StructArrayPublisher<Pose3d> allRejectedPosePublisher;
 
+  @SuppressWarnings("unchecked")
   public Vision(VisionConsumer consumer, VisionIO... io) {
     this.consumer = consumer;
     this.io = io;
@@ -47,13 +51,34 @@ public class Vision extends SubsystemBase {
       inputs[i] = new VisionIOInputs();
     }
 
-    // Initialize disconnected alerts
+    // Initialize disconnected alerts and pose logging publishers
     this.disconnectedAlerts = new Alert[io.length];
+    this.tagPosePublishers = new StructArrayPublisher[io.length];
+    this.robotPosePublishers = new StructArrayPublisher[io.length];
+    this.acceptedPosePublishers = new StructArrayPublisher[io.length];
+    this.rejectedPosePublishers = new StructArrayPublisher[io.length];
+    var table = NetworkTableInstance.getDefault().getTable("Vision");
     for (int i = 0; i < inputs.length; i++) {
       disconnectedAlerts[i] =
-          new Alert(
-              "Vision camera " + Integer.toString(i) + " is disconnected.", AlertType.kWarning);
+          new Alert("Vision camera " + io[i].getName() + " is disconnected.", AlertType.kWarning);
+      var cameraTable = table.getSubTable(io[i].getName());
+      tagPosePublishers[i] =
+          cameraTable.getStructArrayTopic("TagPoses", Pose3d.struct).publish();
+      robotPosePublishers[i] =
+          cameraTable.getStructArrayTopic("RobotPoses", Pose3d.struct).publish();
+      acceptedPosePublishers[i] =
+          cameraTable.getStructArrayTopic("RobotPosesAccepted", Pose3d.struct).publish();
+      rejectedPosePublishers[i] =
+          cameraTable.getStructArrayTopic("RobotPosesRejected", Pose3d.struct).publish();
     }
+
+    var summaryTable = table.getSubTable("Summary");
+    allTagPosePublisher = summaryTable.getStructArrayTopic("TagPoses", Pose3d.struct).publish();
+    allRobotPosePublisher = summaryTable.getStructArrayTopic("RobotPoses", Pose3d.struct).publish();
+    allAcceptedPosePublisher =
+        summaryTable.getStructArrayTopic("RobotPosesAccepted", Pose3d.struct).publish();
+    allRejectedPosePublisher =
+        summaryTable.getStructArrayTopic("RobotPosesRejected", Pose3d.struct).publish();
   }
 
   /**
@@ -67,10 +92,9 @@ public class Vision extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // for (int i = 0; i < io.length; i++) {
-    //   io[i].updateInputs(inputs[i]);
-    //   Logger.processInputs("Vision/Camera" + Integer.toString(i), inputs[i]);
-    // }
+    for (int i = 0; i < io.length; i++) {
+      io[i].updateInputs(inputs[i]);
+    }
 
     // Initialize logging values
     List<Pose3d> allTagPoses = new LinkedList<>();
@@ -140,26 +164,19 @@ public class Vision extends SubsystemBase {
           angularStdDev *= cameraStdDevFactors[cameraIndex];
         }
 
-        // Send vision observation
+        // Send vision observation. The drivetrain converts the FPGA timestamp to the
+        // Phoenix current-time base, so the raw observation timestamp is passed through.
         consumer.accept(
             observation.pose().toPose2d(),
-            Utils.fpgaToCurrentTime(observation.timestamp()),
+            observation.timestamp(),
             VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
       }
 
-      // Log camera datadata
-      Logger.recordOutput(
-          "Vision/Camera" + Integer.toString(cameraIndex) + "/TagPoses",
-          tagPoses.toArray(new Pose3d[tagPoses.size()]));
-      Logger.recordOutput(
-          "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPoses",
-          robotPoses.toArray(new Pose3d[robotPoses.size()]));
-      Logger.recordOutput(
-          "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPosesAccepted",
-          robotPosesAccepted.toArray(new Pose3d[robotPosesAccepted.size()]));
-      Logger.recordOutput(
-          "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPosesRejected",
-          robotPosesRejected.toArray(new Pose3d[robotPosesRejected.size()]));
+      // Log camera data
+      tagPosePublishers[cameraIndex].set(tagPoses.toArray(new Pose3d[0]));
+      robotPosePublishers[cameraIndex].set(robotPoses.toArray(new Pose3d[0]));
+      acceptedPosePublishers[cameraIndex].set(robotPosesAccepted.toArray(new Pose3d[0]));
+      rejectedPosePublishers[cameraIndex].set(robotPosesRejected.toArray(new Pose3d[0]));
       allTagPoses.addAll(tagPoses);
       allRobotPoses.addAll(robotPoses);
       allRobotPosesAccepted.addAll(robotPosesAccepted);
@@ -167,16 +184,10 @@ public class Vision extends SubsystemBase {
     }
 
     // Log summary data
-    Logger.recordOutput(
-        "Vision/Summary/TagPoses", allTagPoses.toArray(new Pose3d[allTagPoses.size()]));
-    Logger.recordOutput(
-        "Vision/Summary/RobotPoses", allRobotPoses.toArray(new Pose3d[allRobotPoses.size()]));
-    Logger.recordOutput(
-        "Vision/Summary/RobotPosesAccepted",
-        allRobotPosesAccepted.toArray(new Pose3d[allRobotPosesAccepted.size()]));
-    Logger.recordOutput(
-        "Vision/Summary/RobotPosesRejected",
-        allRobotPosesRejected.toArray(new Pose3d[allRobotPosesRejected.size()]));
+    allTagPosePublisher.set(allTagPoses.toArray(new Pose3d[0]));
+    allRobotPosePublisher.set(allRobotPoses.toArray(new Pose3d[0]));
+    allAcceptedPosePublisher.set(allRobotPosesAccepted.toArray(new Pose3d[0]));
+    allRejectedPosePublisher.set(allRobotPosesRejected.toArray(new Pose3d[0]));
   }
 
   @FunctionalInterface

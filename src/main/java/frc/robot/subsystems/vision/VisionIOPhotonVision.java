@@ -35,6 +35,11 @@ public class VisionIOPhotonVision implements VisionIO {
   }
 
   @Override
+  public String getName() {
+    return camera.getName();
+  }
+
+  @Override
   public void updateInputs(VisionIOInputs inputs) {
     inputs.connected = camera.isConnected();
 

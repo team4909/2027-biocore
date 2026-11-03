@@ -39,5 +39,10 @@ public interface VisionIO {
     PHOTONVISION
   }
 
+  //Returns the configured name of the camera, used for alerts and logging keys.
+  public default String getName() {
+    return getClass().getSimpleName();
+  }
+
   public default void updateInputs(VisionIOInputs inputs) {}
 }
