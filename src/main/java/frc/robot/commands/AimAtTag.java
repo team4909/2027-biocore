@@ -22,10 +22,10 @@ public class AimAtTag extends Command {
     private final SwerveRequest.RobotCentric turnRequest = new SwerveRequest.RobotCentric();
 
     private final ProfiledPIDController controller = new ProfiledPIDController(
-            1.0, 0.0, 0.1,
+            4.0, 0.0, 0.1,
             new TrapezoidProfile.Constraints(
-                    Math.toRadians(90), // max angular velocity
-                    Math.toRadians(180)  // max angular acceleration
+                    Math.toRadians(270), // max angular velocity
+                    Math.toRadians(540)  // max angular acceleration
             ));
 
     private Rotation2d goal;
