@@ -14,7 +14,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import edu.wpi.first.math.MathUtil;
 
 
-public class TurnToHeading extends Command {
+public class AimAtTag extends Command {
 
     private final CommandSwerveDrivetrain drivetrain;
     private final double relativeDegrees;
@@ -22,17 +22,17 @@ public class TurnToHeading extends Command {
     private final SwerveRequest.RobotCentric turnRequest = new SwerveRequest.RobotCentric();
 
     private final ProfiledPIDController controller = new ProfiledPIDController(
-            4.0, 0.0, 0.1,
+            1.0, 0.0, 0.1,
             new TrapezoidProfile.Constraints(
-                    Math.toRadians(270), // max angular velocity
-                    Math.toRadians(540)  // max angular acceleration
+                    Math.toRadians(90), // max angular velocity
+                    Math.toRadians(180)  // max angular acceleration
             ));
 
     private Rotation2d goal;
     private double startTime;
     private static final double kTimeout = 5.0;
 
-    public TurnToHeading(CommandSwerveDrivetrain drivetrain, double relativeDegrees) {
+    public AimAtTag(CommandSwerveDrivetrain drivetrain, double relativeDegrees) {
         this.drivetrain = drivetrain;
         this.relativeDegrees = relativeDegrees;
 

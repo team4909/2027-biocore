@@ -26,8 +26,8 @@ public class VisionConstants {
   public static AprilTagFieldLayout aprilTagLayout =
       AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
-  public static String frontLeftCameraName = "frontleftcamera";
-  public static String frontRightCameraName = "frontrightcamera";
+  public static String frontLeftCameraName = "frontleftcam";
+  public static String frontRightCameraName = "frontrightcam";
 
   // Robot to camera transforms, measured from the center of the robot on the floor.
   // +X is forward, +Y is left, +Z is up. The cameras are assumed to look straight

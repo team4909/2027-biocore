@@ -23,7 +23,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
-import frc.robot.commands.TurnToHeading;
+import frc.robot.commands.AimAtTag;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.vision.Vision;
@@ -155,6 +155,8 @@ public class RobotContainer {
 
         // Reset heading
         joystick.back().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+
+        joystick.povDown().whileTrue(new AimAtTag(drivetrain, MaxAngularRate));
         
         // 90 degrees is LB, 180 is RB [UPDATE: Commented becuase it is unused]
         // joystick.leftBumper().onTrue(new TurnToHeading(drivetrain, 90.0));
