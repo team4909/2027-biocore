@@ -12,7 +12,7 @@ import java.util.function.DoubleSupplier;
 
 public class CANdleSubsystem extends SubsystemBase {
     private CANdle candle;
-    private final int totalLEDs = 120; //SRIHAAS!!! CHANGE THIS TO THE NUMBER OF LEDS YOU HAVE! (Made it a multiple of 4)
+    private final int totalLEDs = 45;//+ 8 for the candle //SRIHAAS!!! CHANGE THIS TO THE NUMBER OF LEDS YOU HAVE! (Made it a multiple of 4)
     private final int sectionLength = totalLEDs / 4; //Chris said 4 sections is fine
 
     // Pull drivetrain speeds
@@ -38,7 +38,7 @@ public class CANdleSubsystem extends SubsystemBase {
     private final DoubleSupplier speedSupplier;
 
     public CANdleSubsystem(int canID, DoubleSupplier speedSupplier) {
-        candle = new CANdle(canID);
+        candle = new CANdle(0);
         this.speedSupplier = speedSupplier;
 
         CANdleConfiguration config = new CANdleConfiguration();
