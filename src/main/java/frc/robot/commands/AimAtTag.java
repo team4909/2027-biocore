@@ -89,6 +89,12 @@ public class AimAtTag extends Command {
         //Might be the reason why the robot is timing out when holding POV down,
             //thanks to the or.
             //From Srihaas, wdym or?
+                // From walter, the return has || which is or. so its
+                //either controller is at goal
+                // or the time is greater than 5 seconds,
+                // so if the controller is not at goal,
+                // it will wait for 5 seconds and then stop.
+                //                HERE
         return controller.atGoal() || (Timer.getFPGATimestamp() - startTime) > kTimeout;
     }
 
