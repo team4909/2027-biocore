@@ -88,6 +88,7 @@ public class AimAtTag extends Command {
     public boolean isFinished() {
         //Might be the reason why the robot is timing out when holding POV down,
             //thanks to the or.
+            //From Srihaas, wdym or?
         return controller.atGoal() || (Timer.getFPGATimestamp() - startTime) > kTimeout;
     }
 
