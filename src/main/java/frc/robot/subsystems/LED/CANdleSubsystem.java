@@ -13,16 +13,13 @@ import java.util.function.DoubleSupplier;
 public class CANdleSubsystem extends SubsystemBase {
     private CANdle candle;
     private final int totalLEDs = 45;//+ 8 for the candle //SRIHAAS!!! CHANGE THIS TO THE NUMBER OF LEDS YOU HAVE! (Made it a multiple of 4)
-    private final int sectionLength = totalLEDs / 4; //Chris said 4 sections is fine
+    private final int DisabledSectionLength = totalLEDs / 4; //Chris said 4 sections is fine
 
     // Pull drivetrain speeds
     // ChassisSpeeds speeds = m_drivetrain.getState().Speeds;
     // double vx = speed.vxMetersPerSecond;
     // double vy = speed.vyMetersPerSecond;
     // double omega = speed.omegaRadiansPerSecond;
-
-    // Cache to prevent spamming the CAN bus every 20ms
-    private final int[][] lastSectionColors = new int[4][3];
 
     public enum LEDmode {
         DISABLED_SWEEP,
@@ -34,7 +31,7 @@ public class CANdleSubsystem extends SubsystemBase {
     private boolean canBusHealthy = true;
     private boolean batteryHealthy = true;
     private boolean autoReady = false;
-    private final boolean[] cameraHasTargets = new boolean[]{false, false, false, false};
+    private final boolean[] cameraHasTargets = new boolean[]{false, false};
     private final DoubleSupplier speedSupplier;
 
     public CANdleSubsystem(int canID, DoubleSupplier speedSupplier) {
@@ -44,62 +41,42 @@ public class CANdleSubsystem extends SubsystemBase {
         CANdleConfiguration config = new CANdleConfiguration();
         config.LED.BrightnessScalar = 0.7; 
         candle.getConfigurator().apply(config);
-
-        // Initialize cache with invalid colors so the first update forces a write
-        for (int i = 0; i < 4; i++) {
-            lastSectionColors[i][0] = -1;
-            lastSectionColors[i][1] = -1;
-            lastSectionColors[i][2] = -1;
-        }
     }
 
     public void setTeleopZone(int ZoneIndex, int r, int g, int b) {
         if (ZoneIndex < 0 || ZoneIndex >= 2) return;
 
         int teleopSectionLength = totalLEDs / 2;
-        int startIndex = ZoneIndex * teleopSectionLength;
+        int startIndex = 8 + ZoneIndex * teleopSectionLength;
         int endIndex = startIndex + teleopSectionLength - 1;
-
-        // Skip if color hasn't changed (saves CAN bandwidth)
-        if (lastSectionColors[ZoneIndex][0] == r &&
-            lastSectionColors[ZoneIndex][1] == g &&
-            lastSectionColors[ZoneIndex][2] == b) {
-            return;
-        }
-
-        lastSectionColors[ZoneIndex][0] = r;
-        lastSectionColors[ZoneIndex][1] = g;
-        lastSectionColors[ZoneIndex][2] = b;
 
         candle.setControl(new SolidColor(startIndex, endIndex).withColor(new RGBWColor(r, g, b, 0)));
     }
-    public void setSectionColor(int sectionIndex, int r, int g, int b) {
+
+    public void setAutoZone(int AutoZoneIndex, int r, int g, int b) {
+        if (AutoZoneIndex < 0 || AutoZoneIndex >= 2) return;
+
+        int AutoSectionLength = totalLEDs / 2;
+        int startIndex = 8 + AutoZoneIndex * AutoSectionLength;
+        int endIndex = startIndex + AutoSectionLength - 1;
+
+        candle.setControl(new SolidColor(startIndex, endIndex).withColor(new RGBWColor(r, g, b, 0)));
+    }
+
+    public void setDisabledZone(int DisabledZoneIndex, int r, int g, int b) {
         
-        if (sectionIndex < 0 || sectionIndex >= 4) return;
+        if (DisabledZoneIndex < 0 || DisabledZoneIndex >= 4) return;
 
-        // Skip if color hasn't changed (saves CAN bandwidth)
-        if (lastSectionColors[sectionIndex][0] == r &&
-            lastSectionColors[sectionIndex][1] == g &&
-            lastSectionColors[sectionIndex][2] == b) {
-            return;
-        }
-
-        lastSectionColors[sectionIndex][0] = r;
-        lastSectionColors[sectionIndex][1] = g;
-        lastSectionColors[sectionIndex][2] = b;
-
-        int startIndex = sectionIndex * sectionLength;
-        int endIndex = startIndex + sectionLength - 1;
+        int startIndex = 8 + DisabledZoneIndex * DisabledSectionLength;
+        int endIndex = startIndex + DisabledSectionLength - 1;
         candle.setControl(new SolidColor(startIndex, endIndex).withColor(new RGBWColor(r, g, b, 0)));
     }
 
     public void setSolidColor(int r, int g, int b) {
-        for (int i = 0; i < 4; i++) {
-            lastSectionColors[i][0] = r;
-            lastSectionColors[i][1] = g;
-            lastSectionColors[i][2] = b;
-        }
-        candle.setControl(new SolidColor(0, totalLEDs - 1).withColor(new RGBWColor(r, g, b, 0)));
+        candle.setControl(
+            new SolidColor(8, 8 + totalLEDs - 1)                
+            .withColor(new RGBWColor(r, g, b, 0))
+        );
     }
 
     public void clearLEDs() {
@@ -108,10 +85,10 @@ public class CANdleSubsystem extends SubsystemBase {
     
     @Override
     public void periodic() {
-        batteryHealthy = RobotController.getBatteryVoltage() >= 12.0;
+        batteryHealthy = RobotController.getBatteryVoltage() >= 10.0;
 
         if (DriverStation.isDisabled()) {
-            runPreMatchSweep();
+            runDisabledLEDs();
         } else if (DriverStation.isAutonomous()) {
             runAutoLEDs();
         } else {
@@ -120,33 +97,33 @@ public class CANdleSubsystem extends SubsystemBase {
     }
 
     //Disabled functions
-    private void runPreMatchSweep() {
+    private void runDisabledLEDs() {
         // Section 1: Amber (Robot / CAN Health)
         if (canBusHealthy) {
-            setSectionColor(0, 255, 191, 0); // Amber
+            setDisabledZone(0, 255, 191, 0); // Amber
         } else {
-            setSectionColor(0, 255, 0, 0);   // Red fault
+            setDisabledZone(0, 255, 0, 0);   // Red fault
         }
 
         // Section 2: Cyan (Battery Voltage)
         if (batteryHealthy) {
-            setSectionColor(1, 0, 255, 255); // Cyan
+            setDisabledZone(1, 0, 255, 255); // Cyan
         } else {
-            setSectionColor(1, 255, 0, 0);   // Red fault
+            setDisabledZone(1, 255, 0, 0);   // Red fault
         }
 
         // Section 3: Blue (Auto readiness)
         if (autoReady) {
-            setSectionColor(2, 0, 0, 255);   // Blue
+            setDisabledZone(2, 0, 0, 255);   // Blue
         } else {
-            setSectionColor(2, 0, 0, 100);   // Dim blue waiting
+            setDisabledZone(2, 0, 0, 100);   // Dim blue waiting
         }
 
         // Section 4: Purple (Vision Cameras)
         if (cameraHasTargets[0] || cameraHasTargets[1]) {
-            setSectionColor(3, 128, 0, 128); // Purple
+            setDisabledZone(3, 128, 0, 128); // Purple
         } else {
-            setSectionColor(3, 30, 0, 30);   // Dim purple waiting for tags
+            setDisabledZone(3, 30, 0, 30);   // Dim purple waiting for tags
         }
     }
 
@@ -168,7 +145,7 @@ public class CANdleSubsystem extends SubsystemBase {
             Math.max(0.0, Math.min(255.0, zoneOneGreenColor))
         );
         
-        setTeleopZone(0, 0, green,0 );
+        setAutoZone(0, 0, green,0 );
 
         //Zone 1 out of 2
         int activeCameras = 0;
@@ -178,13 +155,13 @@ public class CANdleSubsystem extends SubsystemBase {
             if (hasTarget) activeCameras++;
         }
 
-        if (activeCameras == 2) {
-            setTeleopZone(1, 232, 0, 232); // Bright Purple, 2 tags
+        if (activeCameras >= 2) {
+            setAutoZone(1, 232, 0, 232); // Bright Purple, 2 tags
         } else if (activeCameras == 1) {
-            setTeleopZone(1, 128, 0, 128); // Purple, 1 tag
+            setAutoZone(1, 128, 0, 128); // Purple, 1 tag
         }
         else {
-            setTeleopZone(1, 30, 0, 30);   // Dim purple waiting for tags
+            setAutoZone(1, 30, 0, 30);   // Dim purple waiting for tags
         }
     }
 
@@ -216,7 +193,7 @@ public class CANdleSubsystem extends SubsystemBase {
             if (hasTarget) activeCameras++;
         }
 
-        if (activeCameras == 2) {
+        if (activeCameras >= 2) {
             setTeleopZone(1, 232, 0, 232); // Bright Purple, 2 tags
         } else if (activeCameras == 1) {
             setTeleopZone(1, 128, 0, 128); // Purple, 1 tag
@@ -229,7 +206,7 @@ public class CANdleSubsystem extends SubsystemBase {
     public void setCanBusHealthy(boolean healthy) { this.canBusHealthy = healthy; }
     public void setAutoReady(boolean ready) { this.autoReady = ready; }
     public void setCameraTarget(int cameraIdx, boolean hasTarget) {
-        if (cameraIdx >= 0 && cameraIdx < 4) {
+        if (cameraIdx >= 0 && cameraIdx < cameraHasTargets.length) {
             this.cameraHasTargets[cameraIdx] = hasTarget;
         }
     }
