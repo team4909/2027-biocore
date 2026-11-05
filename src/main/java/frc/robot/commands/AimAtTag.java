@@ -36,7 +36,7 @@ public class AimAtTag extends Command {
     private Rotation2d goal;
     private double startTime;
     private static final double kTimeout = 5.0;
-
+    //Called with Joystick pov.down
     public AimAtTag(CommandSwerveDrivetrain drivetrain, double relativeDegrees) {
         this.drivetrain = drivetrain;
         this.relativeDegrees = relativeDegrees;
@@ -52,30 +52,42 @@ public class AimAtTag extends Command {
         Rotation2d current = drivetrain.getState().RawHeading;
         goal = current.plus(Rotation2d.fromDegrees(relativeDegrees));
         controller.reset(current.getRadians());
+
+        //FPGA stands for Field Programmable Gate Array.
+
         startTime = Timer.getFPGATimestamp();
     }
-
+    //Runs repeatedly while AimAtTag command is active.
+    //About every 20 ms
     @Override
     public void execute() {
-        double current = drivetrain.getState().RawHeading.getRadians();
-        double output = controller.calculate(current, goal.getRadians())
+        // get the current heading
+        double current_heading = drivetrain.getState().RawHeading.getRadians();
+        double output = controller.calculate(current_heading, goal.getRadians())
             + controller.getSetpoint().velocity;
 
         output = MathUtil.clamp(output, -maxAngularVelocity, maxAngularVelocity);
 
+        //Omega == change
         SmartDashboard.putNumber("Auto/RequestedOmega", output);
         SmartDashboard.putNumber("Auto/TurnErrorDeg", Math.toDegrees(goal.minus(drivetrain.getState().Pose.getRotation()).getRadians()));
 
         drivetrain.setControl(
                 turnRequest
+                        //Will not move forward or backwards at all
+                        //Thats what the 0.0's are for
                         .withVelocityX(0.0)
                         .withVelocityY(0.0)
+                        //Sets rotation speed round z Axis to the variables
+                        //output, which is calculated by the PID controller
                         .withRotationalRate(output)
         );
     }
 
     @Override
     public boolean isFinished() {
+        //Might be the reason why the robot is timing out when holding POV down,
+            //thanks to the or.
         return controller.atGoal() || (Timer.getFPGATimestamp() - startTime) > kTimeout;
     }
 
