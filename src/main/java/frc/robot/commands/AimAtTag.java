@@ -13,6 +13,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import edu.wpi.first.math.MathUtil;
 
+//Double = Decimal
+//Boolean = T/F
+//Int = Whole Number
+//String = Text
+//Rotation2d = Angle
 
 public class AimAtTag extends Command {
 
