@@ -95,6 +95,9 @@ public class AimAtTag extends Command {
                 // so if the controller is not at goal,
                 // it will wait for 5 seconds and then stop.
                 //                HERE
+                    //OHHH, I forgot || is or, I thought it was parrellel lines,
+                    //like in math. I get it now.
+
         return controller.atGoal() || (Timer.getFPGATimestamp() - startTime) > kTimeout;
     }
 
