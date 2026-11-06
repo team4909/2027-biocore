@@ -20,6 +20,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
 import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
@@ -92,7 +93,9 @@ public class Vision extends SubsystemBase {
   
   public boolean hasTarget(int cameraIndex) {
       return inputs[cameraIndex].hasTarget
-          && inputs[cameraIndex].connected;
+          && inputs[cameraIndex].connected
+          && (Timer.getFPGATimestamp()
+              - inputs[cameraIndex].targetTimestampSeconds) < 0.25;
   }
 
   public Rotation2d getTargetX(int cameraIndex) {

@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.photonvision.PhotonCamera;
+import edu.wpi.first.wpilibj.Timer;
 
 /** IO implementation for real PhotonVision hardware. */
 public class VisionIOPhotonVision implements VisionIO {
@@ -48,16 +49,15 @@ public class VisionIOPhotonVision implements VisionIO {
     List<PoseObservation> poseObservations = new LinkedList<>();
     for (var result : camera.getAllUnreadResults()) {
     // Update latest target observation
-    if (result.hasTargets()) {
-        inputs.hasTarget = true;
-        inputs.targetTimestampSeconds = result.getTimestampSeconds();
+    inputs.targetTimestampSeconds = result.getTimestampSeconds();
+    inputs.hasTarget = result.hasTargets();
 
+    if (inputs.hasTarget) {
         inputs.latestTargetObservation =
             new TargetObservation(
                 Rotation2d.fromDegrees(result.getBestTarget().getYaw()),
                 Rotation2d.fromDegrees(result.getBestTarget().getPitch()));
     } else {
-        inputs.hasTarget = false;
         inputs.latestTargetObservation =
             new TargetObservation(Rotation2d.kZero, Rotation2d.kZero);
     }
