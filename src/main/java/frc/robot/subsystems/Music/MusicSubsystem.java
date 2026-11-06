@@ -30,7 +30,7 @@ public class MusicSubsystem extends SubsystemBase {
         this.motors = motors;
         this.orchestra = new Orchestra();
         for (TalonFX motor : motors) {
-            orchestra.addInstrument(motor);
+            orchestra.addInstrument(motor, 0);
         }
     }
 
