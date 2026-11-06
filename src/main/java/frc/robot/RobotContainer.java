@@ -39,19 +39,6 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
-
-
-
-
-//---Walter--//
-//ToDo: (for walter)
-//fix aiming at april tag, currently it just turns the robot a certain amount of degrees (I think)
-//To fix this we need to get a vision subsystem and actually use it
-//We could pass the vision subsystem to AimAtTag's constructor 
-//and have it use the vision subsystem to get the angle to the april tag
-//or we could proccess the math here.
-// I think the first option is better because it keeps the math in one place and makes it easier to test and debug
-//---Walter--//
 public class RobotContainer {
     
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
@@ -198,10 +185,6 @@ public class RobotContainer {
 
         // Reset heading
         joystick.back().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
-
-
-        //              Why are we passing MaxAngularRate to AimAtTag? //--Walter--//
-            //You are exactly right, we need to pass vision, too.
         joystick.povDown().whileTrue(
             new AimAtTag(drivetrain, vision, MaxAngularRate)
         );        

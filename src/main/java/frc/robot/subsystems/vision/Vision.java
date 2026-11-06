@@ -87,10 +87,6 @@ public class Vision extends SubsystemBase {
    *
    * @param cameraIndex The index of the camera to use.
    */
-  
-
-  //Can this be used to aim at tag? //--Walter--//
-  
   public boolean hasTarget(int cameraIndex) {
       return inputs[cameraIndex].hasTarget
           && inputs[cameraIndex].connected
