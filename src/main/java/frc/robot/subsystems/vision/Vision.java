@@ -86,6 +86,10 @@ public class Vision extends SubsystemBase {
    *
    * @param cameraIndex The index of the camera to use.
    */
+  
+
+  //Can this be used to aim at tag? //--Walter--//
+  
   public Rotation2d getTargetX(int cameraIndex) {
     return inputs[cameraIndex].latestTargetObservation.tx();
   }

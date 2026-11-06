@@ -84,26 +84,31 @@ public class RobotContainer {
         //Autonomous
         SmartDashboard.putNumber("Auto/HeadingDeg", 0.0);
         SmartDashboard.putNumber("Auto/RequestedOmega", 0.0);
-
+        //--Walter--//
         //Depends on where you are on the field,
         //for autos.
+        //--Walter--//
         mirrorChooser.setDefaultOption("Don't Mirror (Blue)", false);
         mirrorChooser.addOption("Mirror Path (Red)", true);
         SmartDashboard.putData("Manual Mirror Override", mirrorChooser);
-
+        //--Walter--//
         //Configures pathPlanner with the drivetrains
         //pose, resetPose, and getRobotRelativeSpeeds methods
+        //--Walter--//
         configureAutoBuilder();
+        //--Walter--//
         //builds the autoChooser
+        //--Walter--//
         autoChooser = AutoBuilder.buildAutoChooser();
-        //
+        
         SmartDashboard.putData("Auto Mode", autoChooser);
                 SmartDashboard.putNumber("Auto/HeadingDeg",drivetrain.getState().Pose.getRotation().getDegrees());
-
-        //Connects controller's buttons
+        
+        //Connects controller's buttons //--Walter--//
         configureBindings();
     }
-    //Ran for simulations, creates fake cameras
+    
+    //Ran for simulations, creates fake cameras //--Walter--//
     private VisionIO createCameraIO(String name, Transform3d robotToCamera) {
         if (RobotBase.isSimulation()) {
             //creates a new VisionIOPhotonVisionSim object and returns it
@@ -149,8 +154,10 @@ public class RobotContainer {
         );
 
     }
+    //--Walter--//
     // configures the buttons for the controller
     //so the controller can use the buttons and do stuff.
+    //--Walter--//
     private void configureBindings() {
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() ->
@@ -179,11 +186,13 @@ public class RobotContainer {
         // Reset heading
         joystick.back().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
+
+        //              Why are we passing MaxAngularRate to AimAtTag? //--Walter--//
         joystick.povDown().whileTrue(new AimAtTag(drivetrain, MaxAngularRate));
         
         // 90 degrees is LB, 180 is RB [UPDATE: Commented because it is unused]
 
-
+        
         // joystick.leftBumper().onTrue(new TurnToHeading(drivetrain, 90.0));
         // joystick.rightBumper().onTrue(new TurnToHeading(drivetrain, 180.0));
 
