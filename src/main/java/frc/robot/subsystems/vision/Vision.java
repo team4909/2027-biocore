@@ -88,10 +88,12 @@ public class Vision extends SubsystemBase {
    * @param cameraIndex The index of the camera to use.
    */
   public boolean hasTarget(int cameraIndex) {
-      return inputs[cameraIndex].hasTarget
-          && inputs[cameraIndex].connected
-          && (Timer.getFPGATimestamp()
-              - inputs[cameraIndex].targetTimestampSeconds) < 0.25;
+    double targetAge =
+        Timer.getFPGATimestamp() - inputs[cameraIndex].targetTimestampSeconds;
+    return inputs[cameraIndex].hasTarget
+        && inputs[cameraIndex].connected
+        && targetAge >= 0.0
+        && targetAge < 0.25;
   }
 
   public Rotation2d getTargetX(int cameraIndex) {

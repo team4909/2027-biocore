@@ -61,8 +61,8 @@ public class RobotContainer {
     private final CommandXboxController joystick = new CommandXboxController(0);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-    private final SwerveRequest.FieldCentric fieldCentricDrive = new SwerveRequest.FieldCentric()
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage); 
+    private final SwerveRequest.ApplyRobotSpeeds pathPlannerDrive =
+            new SwerveRequest.ApplyRobotSpeeds(); 
             
     private final Vision vision = new Vision(
         drivetrain::addVisionMeasurement,
@@ -146,12 +146,7 @@ public class RobotContainer {
 
     private void driveRobotRelative(ChassisSpeeds speeds) {
         SmartDashboard.putNumber("Auto/RequestedOmega", speeds.omegaRadiansPerSecond);
-        drivetrain.setControl(
-            fieldCentricDrive
-                .withVelocityX(speeds.vxMetersPerSecond)
-                .withVelocityY(speeds.vyMetersPerSecond)
-                .withRotationalRate(speeds.omegaRadiansPerSecond)
-        );
+        drivetrain.setControl(pathPlannerDrive.withSpeeds(speeds));
 
     }
     //--Walter--//

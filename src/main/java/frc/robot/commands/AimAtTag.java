@@ -18,8 +18,6 @@ public class AimAtTag extends Command {
     private final int cameraIndex = 0;
 
     private final double maxAngularVelocity;
-    private static final double TOLERANCE_RADIANS = Math.toRadians(1.5);
-
     private final PIDController controller = new PIDController(4.0, 0.0, 0.1
     );
 
@@ -34,8 +32,6 @@ public class AimAtTag extends Command {
         this.drivetrain = drivetrain;
         this.vision = vision;
         this.maxAngularVelocity = maxAngularVelocity;
-
-        controller.setTolerance(TOLERANCE_RADIANS);
 
         addRequirements(drivetrain);
     }
@@ -88,8 +84,7 @@ public class AimAtTag extends Command {
 
     @Override
     public boolean isFinished() {
-        return vision.hasTarget(cameraIndex)
-            && controller.atSetpoint();
+        return false;
     }
 
     @Override
