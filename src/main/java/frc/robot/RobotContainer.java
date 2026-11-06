@@ -201,8 +201,10 @@ public class RobotContainer {
 
 
         //              Why are we passing MaxAngularRate to AimAtTag? //--Walter--//
-        joystick.povDown().whileTrue(new AimAtTag(drivetrain, MaxAngularRate));
-        
+            //You are exactly right, we need to pass vision, too.
+        joystick.povDown().whileTrue(
+            new AimAtTag(drivetrain, vision, MaxAngularRate)
+        );        
         // 90 degrees is LB, 180 is RB [UPDATE: Commented because it is unused]
 
         

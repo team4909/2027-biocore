@@ -90,8 +90,13 @@ public class Vision extends SubsystemBase {
 
   //Can this be used to aim at tag? //--Walter--//
   
+  public boolean hasTarget(int cameraIndex) {
+      return inputs[cameraIndex].hasTarget
+          && inputs[cameraIndex].connected;
+  }
+
   public Rotation2d getTargetX(int cameraIndex) {
-    return inputs[cameraIndex].latestTargetObservation.tx();
+      return inputs[cameraIndex].latestTargetObservation.tx();
   }
 
   @Override
