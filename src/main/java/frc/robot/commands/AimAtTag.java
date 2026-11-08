@@ -71,13 +71,8 @@ public class AimAtTag extends Command {
             maxAngularVelocity
         );
 
-        SmartDashboard.putBoolean("Vision/Aiming/HasTarget", true);
         SmartDashboard.putNumber(
-            "Vision/Aiming/TxDegrees",
-            Math.toDegrees(tx)
-        );
-        SmartDashboard.putNumber(
-            "Vision/Aiming/RequestedOmega",
+        "Vision/Aiming/RequestedOmega",
             output
         );
 

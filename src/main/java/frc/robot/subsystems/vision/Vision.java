@@ -21,6 +21,7 @@ import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
 import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
@@ -28,6 +29,8 @@ import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
+import frc.robot.commands.AimAtTag;
 
 public class Vision extends SubsystemBase {
   private final VisionConsumer consumer;
@@ -106,6 +109,23 @@ public class Vision extends SubsystemBase {
   public void periodic() {
     for (int i = 0; i < io.length; i++) {
       io[i].updateInputs(inputs[i]);
+      List<Integer> cameras = camerasWithTarget();
+
+      int cameraIndex = cameraOfBestChoice(cameras);
+
+      SmartDashboard.putBoolean(
+          "Vision/Aiming/HasTarget",
+          cameraIndex != -1
+      );
+
+      if (cameraIndex != -1) {
+          double tx = getTargetX(cameraIndex).getDegrees();
+
+          SmartDashboard.putNumber(
+              "Vision/Aiming/TxDegrees",
+              tx
+          );
+      }
     }
 
     // Initialize logging values
