@@ -109,23 +109,28 @@ public class Vision extends SubsystemBase {
   public void periodic() {
     for (int i = 0; i < io.length; i++) {
       io[i].updateInputs(inputs[i]);
-      List<Integer> cameras = camerasWithTarget();
+      
+    List<Integer> cameras = camerasWithTarget();
+        int cameraIndex = cameraOfBestChoice(cameras);
 
-      int cameraIndex = cameraOfBestChoice(cameras);
+        SmartDashboard.putBoolean(
+            "Vision/Aiming/HasTarget",
+            cameraIndex != -1
+        );
 
-      SmartDashboard.putBoolean(
-          "Vision/Aiming/HasTarget",
-          cameraIndex != -1
-      );
+        if (cameraIndex != -1) {
+            double tx = getTargetX(cameraIndex).getDegrees();
 
-      if (cameraIndex != -1) {
-          double tx = getTargetX(cameraIndex).getDegrees();
-
-          SmartDashboard.putNumber(
-              "Vision/Aiming/TxDegrees",
-              tx
-          );
-      }
+            SmartDashboard.putNumber(
+                "Vision/Aiming/TxDegrees",
+                tx
+            );
+        } else {
+            SmartDashboard.putNumber(
+                "Vision/Aiming/TxDegrees",
+                0.0
+            );
+        }
     }
 
     // Initialize logging values

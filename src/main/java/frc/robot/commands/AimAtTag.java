@@ -54,8 +54,6 @@ public class AimAtTag extends Command {
         //if no cameras have a target, set the
         //SmartDashboard values to false and 0, and set the drivetrain to brake
         if (cameraIndex == -1) {
-            SmartDashboard.putBoolean("Vision/Aiming/HasTarget", false);
-            SmartDashboard.putNumber("Vision/Aiming/TxDegrees", 0.0);
             SmartDashboard.putNumber("Vision/Aiming/RequestedOmega", 0.0);
             drivetrain.setControl(new SwerveRequest.SwerveDriveBrake());
             return;
