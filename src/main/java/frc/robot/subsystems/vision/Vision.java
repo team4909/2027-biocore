@@ -24,6 +24,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
 import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
+
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -207,4 +209,79 @@ public class Vision extends SubsystemBase {
         double timestampSeconds,
         Matrix<N3, N1> visionMeasurementStdDevs);
   }
+
+
+  //Called by aim at tag to get a list of cameras that have a target
+  //Io.length is the number of cameras
+  public List<Integer> camerasWithTarget() {
+
+
+    List<Integer> CamerasWithTarget = new ArrayList<Integer>();
+
+    //loop through all the cameras and check if they have a target, if they do add them to the list
+    for (int cameraIndex = 0; cameraIndex < io.length; cameraIndex++) {
+
+      if (hasTarget(cameraIndex)) {
+        CamerasWithTarget.add(cameraIndex);
+      }
+
+    }
+    return CamerasWithTarget;
+  }
+
+  //Called by aim at tag to get the camera with the best target
+  //Usually only helpful if there are multiple cameras with a target
+  //but it still selects a camera for aim at tag to use
+  public int cameraOfBestChoice(List<Integer> CamerasWithTarget) {
+
+    int bestCameraIndex = -1;
+
+    //if there are no cameras with a target, return -1
+
+    if (CamerasWithTarget.isEmpty()) {
+      bestCameraIndex = -1;
+      return bestCameraIndex;
+    }
+
+    //if there is only one camera with a target, return that camera
+    if (CamerasWithTarget.size() == 1) {
+      bestCameraIndex = CamerasWithTarget.get(0);
+      return bestCameraIndex;
+    }
+    //decide which camera has the lowest value of tx
+    int bestCameraTX = Integer.MAX_VALUE;
+
+    //loop through all the cameras
+    for (int cameraIndex  = 0; cameraIndex < CamerasWithTarget.size(); cameraIndex++) {
+
+      //get the camera index inside Cameras with target
+      //this is so if the camera indices start with
+      // 1 or above it still works
+      int currentCameraIndex = CamerasWithTarget.get(cameraIndex);
+
+      //we get the tx of the current camera index and compare it to the best camera tx
+      //if it's the first iteration then it'll always
+      //be smaller since we set bestCameraTX to Integer.MAX_VALUE
+      //which is the highest value an integer can be, so itll always be smaller than that
+      double tx = getTargetX(currentCameraIndex).getDegrees();
+
+      //if the tx is less than the best camera tx, update the best camera tx and index
+      //use abs value to make sure we get the closest to 0, since tx can be negative or positive
+      if (Math.abs(tx) < Math.abs(bestCameraTX)) {
+        bestCameraTX = (int) tx;
+        bestCameraIndex = currentCameraIndex;
+      }
+    }
+
+
+    return bestCameraIndex;
+
+  }
+
+  //also called by aim at tag
+  public int getIoLength() {
+    return io.length;
+  }
+
+
 }

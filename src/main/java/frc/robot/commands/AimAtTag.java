@@ -10,12 +10,15 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.vision.Vision;
 
+import java.util.List;
+
 public class AimAtTag extends Command {
 
     private final CommandSwerveDrivetrain drivetrain;
     private final Vision vision;
 
-    private final int cameraIndex = 0;
+
+
 
     private final double maxAngularVelocity;
     private final PIDController controller = new PIDController(4.0, 0.0, 0.1
@@ -44,16 +47,20 @@ public class AimAtTag extends Command {
     @Override
     public void execute() {
 
-        if (!vision.hasTarget(cameraIndex)) {
-            drivetrain.setControl(new SwerveRequest.SwerveDriveBrake());
 
+        List<Integer> CamerasWithTarget = vision.camerasWithTarget();
+
+        int cameraIndex = vision.cameraOfBestChoice(CamerasWithTarget);
+        //if no cameras have a target, set the
+        //SmartDashboard values to false and 0, and set the drivetrain to brake
+        if (cameraIndex == -1) {
             SmartDashboard.putBoolean("Vision/Aiming/HasTarget", false);
             SmartDashboard.putNumber("Vision/Aiming/TxDegrees", 0.0);
             SmartDashboard.putNumber("Vision/Aiming/RequestedOmega", 0.0);
-
+            drivetrain.setControl(new SwerveRequest.SwerveDriveBrake());
             return;
         }
-
+        
         double tx = vision.getTargetX(cameraIndex).getRadians();
 
         double output = controller.calculate(-tx, 0.0);
