@@ -73,7 +73,7 @@ public class AimAtTag extends Command {
         "Vision/Aiming/RequestedOmega",
             output
         );
-
+        //request drive train to turn
         drivetrain.setControl(
             turnRequest
                 .withVelocityX(0.0)

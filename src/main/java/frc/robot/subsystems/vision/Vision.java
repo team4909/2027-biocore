@@ -109,16 +109,22 @@ public class Vision extends SubsystemBase {
   public void periodic() {
     for (int i = 0; i < io.length; i++) {
       io[i].updateInputs(inputs[i]);
-      
+
+      //get a list of cameras with target
+      //pick the best one too
     List<Integer> cameras = camerasWithTarget();
         int cameraIndex = cameraOfBestChoice(cameras);
 
+        boolean hasTarget = cameraIndex != -1;
+
+        // -1 == no cameras have a target
+        // so not -1 means we have a camera with a target
         SmartDashboard.putBoolean(
             "Vision/Aiming/HasTarget",
-            cameraIndex != -1
+            hasTarget
         );
 
-        if (cameraIndex != -1) {
+        if (hasTarget) {
             double tx = getTargetX(cameraIndex).getDegrees();
 
             SmartDashboard.putNumber(
