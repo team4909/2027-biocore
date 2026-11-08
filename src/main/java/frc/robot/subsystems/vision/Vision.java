@@ -1,3 +1,4 @@
+
 // Copyright (c) 2021-2025 Littleton Robotics
 // http://github.com/Mechanical-Advantage
 //
@@ -29,8 +30,6 @@ import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
-import frc.robot.commands.AimAtTag;
 
 public class Vision extends SubsystemBase {
   private final VisionConsumer consumer;
@@ -102,42 +101,31 @@ public class Vision extends SubsystemBase {
   }
 
   public Rotation2d getTargetX(int cameraIndex) {
-      return inputs[cameraIndex].latestTargetObservation.tx();
+    return inputs[cameraIndex].latestTargetObservation.tx();
   }
 
   @Override
   public void periodic() {
+    // Update all camera inputs first
     for (int i = 0; i < io.length; i++) {
       io[i].updateInputs(inputs[i]);
-
-      //get a list of cameras with target
-      //pick the best one too
-    List<Integer> cameras = camerasWithTarget();
-        int cameraIndex = cameraOfBestChoice(cameras);
-
-        boolean hasTarget = cameraIndex != -1;
-
-        // -1 == no cameras have a target
-        // so not -1 means we have a camera with a target
-        SmartDashboard.putBoolean(
-            "Vision/Aiming/HasTarget",
-            hasTarget
-        );
-
-        if (hasTarget) {
-            double tx = getTargetX(cameraIndex).getDegrees();
-
-            SmartDashboard.putNumber(
-                "Vision/Aiming/TxDegrees",
-                tx
-            );
-        } else {
-            SmartDashboard.putNumber(
-                "Vision/Aiming/TxDegrees",
-                0.0
-            );
-        }
     }
+
+    // Get cameras with targets and select the best one
+    List<Integer> cameras = camerasWithTarget();
+    int cameraIndex = cameraOfBestChoice(cameras);
+
+    boolean hasTarget = cameraIndex != -1;
+
+    SmartDashboard.putBoolean(
+        "Vision/Aiming/HasTarget",
+        hasTarget
+    );
+
+    SmartDashboard.putNumber(
+        "Vision/Aiming/TxDegrees",
+        hasTarget ? getTargetX(cameraIndex).getDegrees() : 0.0
+    );
 
     // Initialize logging values
     List<Pose3d> allTagPoses = new LinkedList<>();
@@ -146,7 +134,7 @@ public class Vision extends SubsystemBase {
     List<Pose3d> allRobotPosesRejected = new LinkedList<>();
 
     // Loop over cameras
-    for (int cameraIndex = 0; cameraIndex < io.length; cameraIndex++) {
+    for (int i = 0; i < io.length; i++) {
       // Update disconnected alert
       disconnectedAlerts[cameraIndex].set(!inputs[cameraIndex].connected);
 
@@ -200,7 +188,7 @@ public class Vision extends SubsystemBase {
         double angularStdDev = angularStdDevBaseline * stdDevFactor;
         if (observation.type() == PoseObservationType.MEGATAG_2) {
           linearStdDev *= linearStdDevMegatag2Factor;
-          angularStdDev *= angularStdDevMegatag2Factor;
+          angularStdDev *= linearStdDevMegatag2Factor;
         }
         if (cameraIndex < cameraStdDevFactors.length) {
           linearStdDev *= cameraStdDevFactors[cameraIndex];
@@ -241,78 +229,62 @@ public class Vision extends SubsystemBase {
         Matrix<N3, N1> visionMeasurementStdDevs);
   }
 
-
-  //Called by aim at tag to get a list of cameras that have a target
-  //Io.length is the number of cameras
+  // Called by AimAtTag to get a list of cameras that have a target
+  // io.length is the number of cameras
   public List<Integer> camerasWithTarget() {
+    List<Integer> camerasWithTarget = new ArrayList<Integer>();
 
-
-    List<Integer> CamerasWithTarget = new ArrayList<Integer>();
-
-    //loop through all the cameras and check if they have a target, if they do add them to the list
+    // Loop through all the cameras and check if they have a target.
+    // If they do, add them to the list.
     for (int cameraIndex = 0; cameraIndex < io.length; cameraIndex++) {
-
       if (hasTarget(cameraIndex)) {
-        CamerasWithTarget.add(cameraIndex);
+        camerasWithTarget.add(cameraIndex);
       }
-
     }
-    return CamerasWithTarget;
+
+    return camerasWithTarget;
   }
 
-  //Called by aim at tag to get the camera with the best target
-  //Usually only helpful if there are multiple cameras with a target
-  //but it still selects a camera for aim at tag to use
-  public int cameraOfBestChoice(List<Integer> CamerasWithTarget) {
+  // Called by AimAtTag to get the camera with the best target
+  // Usually only helpful if there are multiple cameras with a target
+  // but it still selects a camera for AimAtTag to use
+  public int cameraOfBestChoice(List<Integer> camerasWithTarget) {
+    // If there are no cameras with a target, return -1
+    if (camerasWithTarget.isEmpty()) {
+      return -1;
+    }
 
+    // If there is only one camera with a target, return that camera
+    if (camerasWithTarget.size() == 1) {
+      return camerasWithTarget.get(0);
+    }
+
+    // Decide which camera has the lowest absolute value of tx
+    double bestCameraTX = Double.MAX_VALUE;
     int bestCameraIndex = -1;
 
-    //if there are no cameras with a target, return -1
+    // Loop through all the cameras
+    for (int cameraIndex = 0; cameraIndex < camerasWithTarget.size(); cameraIndex++) {
 
-    if (CamerasWithTarget.isEmpty()) {
-      bestCameraIndex = -1;
-      return bestCameraIndex;
-    }
+      // Get the camera index inside camerasWithTarget
+      // This is so if the camera indices start with 1 or above it still works
+      int currentCameraIndex = camerasWithTarget.get(cameraIndex);
 
-    //if there is only one camera with a target, return that camera
-    if (CamerasWithTarget.size() == 1) {
-      bestCameraIndex = CamerasWithTarget.get(0);
-      return bestCameraIndex;
-    }
-    //decide which camera has the lowest value of tx
-    int bestCameraTX = Integer.MAX_VALUE;
-
-    //loop through all the cameras
-    for (int cameraIndex  = 0; cameraIndex < CamerasWithTarget.size(); cameraIndex++) {
-
-      //get the camera index inside Cameras with target
-      //this is so if the camera indices start with
-      // 1 or above it still works
-      int currentCameraIndex = CamerasWithTarget.get(cameraIndex);
-
-      //we get the tx of the current camera index and compare it to the best camera tx
-      //if it's the first iteration then it'll always
-      //be smaller since we set bestCameraTX to Integer.MAX_VALUE
-      //which is the highest value an integer can be, so itll always be smaller than that
+      // Get the tx of the current camera and compare it to the best camera tx
       double tx = getTargetX(currentCameraIndex).getDegrees();
 
-      //if the tx is less than the best camera tx, update the best camera tx and index
-      //use abs value to make sure we get the closest to 0, since tx can be negative or positive
+      // Use absolute value to select the target closest to 0
       if (Math.abs(tx) < Math.abs(bestCameraTX)) {
-        bestCameraTX = (int) tx;
+        bestCameraTX = tx;
         bestCameraIndex = currentCameraIndex;
       }
     }
 
-
     return bestCameraIndex;
-
   }
 
-  //also called by aim at tag
+  // Also called by AimAtTag
   public int getIoLength() {
     return io.length;
   }
-
-
 }
