@@ -136,7 +136,7 @@ public class Vision extends SubsystemBase {
     // Loop over cameras
     for (int i = 0; i < io.length; i++) {
       // Update disconnected alert
-      disconnectedAlerts[cameraIndex].set(!inputs[cameraIndex].connected);
+      disconnectedAlerts[i].set(!inputs[i].connected);
 
       // Initialize logging values
       List<Pose3d> tagPoses = new LinkedList<>();
@@ -145,7 +145,7 @@ public class Vision extends SubsystemBase {
       List<Pose3d> robotPosesRejected = new LinkedList<>();
 
       // Add tag poses
-      for (int tagId : inputs[cameraIndex].tagIds) {
+      for (int tagId : inputs[i].tagIds) {
         var tagPose = aprilTagLayout.getTagPose(tagId);
         if (tagPose.isPresent()) {
           tagPoses.add(tagPose.get());
@@ -153,7 +153,7 @@ public class Vision extends SubsystemBase {
       }
 
       // Loop over pose observations
-      for (var observation : inputs[cameraIndex].poseObservations) {
+      for (var observation : inputs[i].poseObservations) {
         // Check whether to reject pose
         boolean rejectPose =
             observation.tagCount() == 0 // Must have at least one tag
@@ -190,9 +190,9 @@ public class Vision extends SubsystemBase {
           linearStdDev *= linearStdDevMegatag2Factor;
           angularStdDev *= linearStdDevMegatag2Factor;
         }
-        if (cameraIndex < cameraStdDevFactors.length) {
-          linearStdDev *= cameraStdDevFactors[cameraIndex];
-          angularStdDev *= cameraStdDevFactors[cameraIndex];
+        if (i < cameraStdDevFactors.length) {
+            linearStdDev *= cameraStdDevFactors[i];
+            angularStdDev *= cameraStdDevFactors[i];
         }
 
         // Send vision observation. The drivetrain converts the FPGA timestamp to the
@@ -204,10 +204,10 @@ public class Vision extends SubsystemBase {
       }
 
       // Log camera data
-      tagPosePublishers[cameraIndex].set(tagPoses.toArray(new Pose3d[0]));
-      robotPosePublishers[cameraIndex].set(robotPoses.toArray(new Pose3d[0]));
-      acceptedPosePublishers[cameraIndex].set(robotPosesAccepted.toArray(new Pose3d[0]));
-      rejectedPosePublishers[cameraIndex].set(robotPosesRejected.toArray(new Pose3d[0]));
+      tagPosePublishers[i].set(tagPoses.toArray(new Pose3d[0]));
+      robotPosePublishers[i].set(robotPoses.toArray(new Pose3d[0]));
+      acceptedPosePublishers[i].set(robotPosesAccepted.toArray(new Pose3d[0]));
+      rejectedPosePublishers[i].set(robotPosesRejected.toArray(new Pose3d[0]));
       allTagPoses.addAll(tagPoses);
       allRobotPoses.addAll(robotPoses);
       allRobotPosesAccepted.addAll(robotPosesAccepted);
