@@ -156,11 +156,21 @@ public class RobotContainer {
         joystick.leftBumper().onTrue(new TurnToHeading(drivetrain, 90.0));
         joystick.rightBumper().onTrue(new TurnToHeading(drivetrain, 180.0));
 
-        // Music subsystem controls
+
+        //region Music subsystem controls
+        //must be held, i think, since
+        //when you press it and hold the first
+        //method plays, once, and when you let go
+        //(onFalse) and it stops the music
         joystick.povUp().onTrue(Commands.runOnce(() -> 
-        
+            // Plays a random song from
             musicSubsystem.playRandomSong())
         );
+        joystick.povUp().onFalse(Commands.runOnce(() ->
+                musicSubsystem.stopMusic())
+        );
+        //endregion
+
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
