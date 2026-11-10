@@ -61,7 +61,7 @@ public class AimAtTag extends Command {
         
         double tx = vision.getTargetX(cameraIndex).getRadians();
 
-        double output = controller.calculate(-tx, 0.0);
+        double output = controller.calculate(tx, 0.0);
 
         output = MathUtil.clamp(
             output,
