@@ -158,7 +158,8 @@ public class RobotContainer {
 
         // Music subsystem controls
         joystick.povUp().onTrue(Commands.runOnce(() -> 
-            musicSubsystem.playMusic("mario.chrp"), musicSubsystem)
+        
+            musicSubsystem.playRandomSong())
         );
 
         drivetrain.registerTelemetry(logger::telemeterize);
