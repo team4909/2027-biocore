@@ -8,7 +8,18 @@
 
 package frc.robot.subsystems.vision;
 
-import static frc.robot.subsystems.vision.VisionConstants.*;
+import static frc.robot.subsystems.vision.VisionConstants.angularStdDevBaseline;
+import static frc.robot.subsystems.vision.VisionConstants.aprilTagLayout;
+import static frc.robot.subsystems.vision.VisionConstants.cameraStdDevFactors;
+import static frc.robot.subsystems.vision.VisionConstants.linearStdDevBaseline;
+import static frc.robot.subsystems.vision.VisionConstants.linearStdDevMegatag2Factor;
+import static frc.robot.subsystems.vision.VisionConstants.maxAmbiguity;
+import static frc.robot.subsystems.vision.VisionConstants.maxZError;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -26,10 +37,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
 import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
-
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
 public class Vision extends SubsystemBase {
   private final VisionConsumer consumer;
@@ -101,7 +108,8 @@ public class Vision extends SubsystemBase {
   }
 
   public Rotation2d getTargetX(int cameraIndex) {
-    return inputs[cameraIndex].latestTargetObservation.tx();
+    // return inputs[cameraIndex].latestTargetObservation.tx();
+    return inputs[cameraIndex].latestTargetObservation.ty();
   }
 
   @Override
@@ -261,6 +269,7 @@ public class Vision extends SubsystemBase {
 
     // Decide which camera has the lowest absolute value of tx
     double bestCameraTX = Double.MAX_VALUE;
+    double totalTx = 0.0;
     int bestCameraIndex = -1;
 
     // Loop through all the cameras
@@ -273,6 +282,8 @@ public class Vision extends SubsystemBase {
       // Get the tx of the current camera and compare it to the best camera tx
       double tx = getTargetX(currentCameraIndex).getDegrees();
 
+      totalTx += tx;
+
       // Use absolute value to select the target closest to 0
       if (Math.abs(tx) < Math.abs(bestCameraTX)) {
         bestCameraTX = tx;
@@ -280,7 +291,49 @@ public class Vision extends SubsystemBase {
       }
     }
 
+    
+
     return bestCameraIndex;
+  }
+
+  public Optional<Double> getCamTx(List<Integer> camerasWithTarget)
+  {
+
+    if (camerasWithTarget.isEmpty())
+    {
+      return Optional.empty();
+    }
+
+    double[] temp = new double[2];
+    if (camerasWithTarget.size() > 0) {
+      temp[0] = camerasWithTarget.get(0);
+    }
+    if (camerasWithTarget.size() == 2) {
+      temp[1] = camerasWithTarget.get(1);
+    }
+    SmartDashboard.putNumberArray("Vision/Aiming/cams_with_target", temp);
+
+    if (camerasWithTarget.contains(0)) {
+      SmartDashboard.putNumber("Vision/Aiming/cam0_tx", getTargetX(0).getDegrees()); 
+    } else {
+      SmartDashboard.putNumber("Vision/Aiming/cam0_tx", 0);
+    }
+    if (camerasWithTarget.contains(1)) {
+      SmartDashboard.putNumber("Vision/Aiming/cam1_tx", getTargetX(1).getDegrees()); 
+    } else {
+      SmartDashboard.putNumber("Vision/Aiming/cam1_tx", 0);
+    }
+
+
+
+    double totalTx = 0.0;
+
+    for (Integer index : camerasWithTarget)
+    {
+      totalTx += getTargetX(index).getDegrees();
+
+    }
+    return Optional.of(totalTx/camerasWithTarget.size());
   }
 
   // Also called by AimAtTag

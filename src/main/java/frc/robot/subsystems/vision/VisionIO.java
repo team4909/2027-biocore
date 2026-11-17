@@ -19,7 +19,7 @@ public interface VisionIO {
     public boolean hasTarget = false;
     public double targetTimestampSeconds = 0.0;
 
-    public TargetObservation latestTargetObservation =
+    public TargetObservation  latestTargetObservation =
         new TargetObservation(Rotation2d.kZero, Rotation2d.kZero);
     public PoseObservation[] poseObservations = new PoseObservation[0];
     public int[] tagIds = new int[0];

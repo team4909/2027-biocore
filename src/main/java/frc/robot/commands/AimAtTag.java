@@ -11,6 +11,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.vision.Vision;
 
 import java.util.List;
+import java.util.Optional;
 
 public class AimAtTag extends Command {
 
@@ -21,7 +22,7 @@ public class AimAtTag extends Command {
 
 
     private final double maxAngularVelocity;
-    private final PIDController controller = new PIDController(4.0, 0.0, 0.1
+    private final PIDController controller = new PIDController(0.5, 0.0, 0.1
     );
 
     private final SwerveRequest.RobotCentric turnRequest =
@@ -50,16 +51,19 @@ public class AimAtTag extends Command {
 
         List<Integer> CamerasWithTarget = vision.camerasWithTarget();
 
-        int cameraIndex = vision.cameraOfBestChoice(CamerasWithTarget);
+        
+        Optional<Double> optTx = vision.getCamTx(CamerasWithTarget);
+
         //if no cameras have a target, set the
         //SmartDashboard values to false and 0, and set the drivetrain to brake
-        if (cameraIndex == -1) {
+        if (optTx.isEmpty()) {
             SmartDashboard.putNumber("Vision/Aiming/RequestedOmega", 0.0);
             drivetrain.setControl(new SwerveRequest.SwerveDriveBrake());
             return;
         }
-        
-        double tx = vision.getTargetX(cameraIndex).getRadians();
+
+        double tx =  optTx.get();
+        SmartDashboard.putNumber("Vision/Aiming/netTx", tx);
 
         double output = controller.calculate(tx, 0.0);
 
