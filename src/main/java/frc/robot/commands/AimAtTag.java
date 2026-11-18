@@ -63,6 +63,8 @@ public class AimAtTag extends Command {
         // get the pose of the tag from the field layout
         var targetTagPose = VisionConstants.aprilTagLayout.getTagPose(targetTagId);
         if (targetTagPose.isEmpty()) {
+            //requested omega is requested change, with a number
+            //so think of it as "requested to turn at this speed/angle"
             SmartDashboard.putNumber("Vision/Aiming/RequestedOmega", 0.0);
             drivetrain.setControl(new SwerveRequest.SwerveDriveBrake());
             return;
@@ -81,7 +83,9 @@ public class AimAtTag extends Command {
 
 
         double output = controller.calculate(tx, 0.0);
-
+        
+        //this is so that we dont turn too fast.
+        //maxAngularVelocity is the max speed we can turn at
         output = MathUtil.clamp(
             output,
             -maxAngularVelocity,

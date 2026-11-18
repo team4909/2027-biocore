@@ -236,66 +236,7 @@ public class Vision extends SubsystemBase {
         double timestampSeconds,
         Matrix<N3, N1> visionMeasurementStdDevs);
   }
-
-  // Called by AimAtTag to get a list of cameras that have a target
-  // io.length is the number of cameras
-  public List<Integer> camerasWithTarget() {
-    List<Integer> camerasWithTarget = new ArrayList<Integer>();
-
-    // Loop through all the cameras and check if they have a target.
-    // If they do, add them to the list.
-    for (int cameraIndex = 0; cameraIndex < io.length; cameraIndex++) {
-      if (hasTarget(cameraIndex)) {
-        camerasWithTarget.add(cameraIndex);
-      }
-    }
-
-    return camerasWithTarget;
-  }
-
-  // Called by AimAtTag to get the camera with the best target
-  // Usually only helpful if there are multiple cameras with a target
-  // but it still selects a camera for AimAtTag to use
-  public int cameraOfBestChoice(List<Integer> camerasWithTarget) {
-    // If there are no cameras with a target, return -1
-    if (camerasWithTarget.isEmpty()) {
-      return -1;
-    }
-
-    // If there is only one camera with a target, return that camera
-    if (camerasWithTarget.size() == 1) {
-      return camerasWithTarget.get(0);
-    }
-
-    // Decide which camera has the lowest absolute value of tx
-    double bestCameraTX = Double.MAX_VALUE;
-    double totalTx = 0.0;
-    int bestCameraIndex = -1;
-
-    // Loop through all the cameras
-    for (int cameraIndex = 0; cameraIndex < camerasWithTarget.size(); cameraIndex++) {
-
-      // Get the camera index inside camerasWithTarget
-      // This is so if the camera indices start with 1 or above it still works
-      int currentCameraIndex = camerasWithTarget.get(cameraIndex);
-
-      // Get the tx of the current camera and compare it to the best camera tx
-      double tx = getTargetX(currentCameraIndex).getDegrees();
-
-      totalTx += tx;
-
-      // Use absolute value to select the target closest to 0
-      if (Math.abs(tx) < Math.abs(bestCameraTX)) {
-        bestCameraTX = tx;
-        bestCameraIndex = currentCameraIndex;
-      }
-    }
-
-    
-
-    return bestCameraIndex;
-  }
-
+  //anything below this isnt used yet. that doesnt mean it will be used in the future.
   public Optional<Double> getCamTx(List<Integer> camerasWithTarget)
   {
 
@@ -334,10 +275,5 @@ public class Vision extends SubsystemBase {
 
     }
     return Optional.of(totalTx/camerasWithTarget.size());
-  }
-
-  // Also called by AimAtTag
-  public int getIoLength() {
-    return io.length;
   }
 }
