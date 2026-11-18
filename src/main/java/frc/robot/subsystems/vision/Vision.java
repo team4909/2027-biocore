@@ -106,7 +106,7 @@ public class Vision extends SubsystemBase {
         && targetAge >= 0.0
         && targetAge < 0.25;
   }
-
+  // TODO: Figure out if it should return ty
   public Rotation2d getTargetX(int cameraIndex) {
     // return inputs[cameraIndex].latestTargetObservation.tx();
     return inputs[cameraIndex].latestTargetObservation.ty();
@@ -303,7 +303,7 @@ public class Vision extends SubsystemBase {
     {
       return Optional.empty();
     }
-
+    
     double[] temp = new double[2];
     if (camerasWithTarget.size() > 0) {
       temp[0] = camerasWithTarget.get(0);

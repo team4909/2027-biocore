@@ -4,26 +4,30 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.vision.Vision;
-
+import frc.robot.subsystems.vision.VisionConstants;
 import java.util.List;
 import java.util.Optional;
 
 public class AimAtTag extends Command {
 
+
+
     private final CommandSwerveDrivetrain drivetrain;
     private final Vision vision;
-
-
-
-
+    private final int targetTagId;
     private final double maxAngularVelocity;
-    private final PIDController controller = new PIDController(0.5, 0.0, 0.1
-    );
+
+
+    private final PIDController controller = new PIDController(4.0, 0.0, 0.2);
 
     private final SwerveRequest.RobotCentric turnRequest =
         new SwerveRequest.RobotCentric();
@@ -31,11 +35,15 @@ public class AimAtTag extends Command {
     public AimAtTag(
         CommandSwerveDrivetrain drivetrain,
         Vision vision,
+        int targetTagId,
         double maxAngularVelocity
     ) {
         this.drivetrain = drivetrain;
         this.vision = vision;
+        this.targetTagId = 30;
         this.maxAngularVelocity = maxAngularVelocity;
+
+        controller.enableContinuousInput(-Math.PI, Math.PI);
 
         addRequirements(drivetrain);
     }
@@ -48,22 +56,29 @@ public class AimAtTag extends Command {
     @Override
     public void execute() {
 
-
-        List<Integer> CamerasWithTarget = vision.camerasWithTarget();
+        // get pose2d of the robot
+        var robotPose = drivetrain.getState().Pose;
 
         
-        Optional<Double> optTx = vision.getCamTx(CamerasWithTarget);
-
-        //if no cameras have a target, set the
-        //SmartDashboard values to false and 0, and set the drivetrain to brake
-        if (optTx.isEmpty()) {
+        // get the pose of the tag from the field layout
+        var targetTagPose = VisionConstants.aprilTagLayout.getTagPose(targetTagId);
+        if (targetTagPose.isEmpty()) {
             SmartDashboard.putNumber("Vision/Aiming/RequestedOmega", 0.0);
             drivetrain.setControl(new SwerveRequest.SwerveDriveBrake());
             return;
         }
+        //Turn the target tag pose into a 2d pose
+        Pose2d targetTagPose2d = targetTagPose.get().toPose2d();
+        // calculate the angle to the target tag
+        Translation2d robotToTag = targetTagPose2d.getTranslation().minus(robotPose.getTranslation());
+        Rotation2d desiredAngle = new Rotation2d(robotToTag.getX(), robotToTag.getY());
+        //get our current rotation in radians
+        var currentHeading = robotPose.getRotation().getRadians();
 
-        double tx =  optTx.get();
-        SmartDashboard.putNumber("Vision/Aiming/netTx", tx);
+
+        //calculate how much we need to turn to face the target tag
+        var tx = desiredAngle.getRadians() - currentHeading;
+
 
         double output = controller.calculate(tx, 0.0);
 
