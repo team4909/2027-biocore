@@ -1,4 +1,4 @@
-package frc.robot.subsystems.LED;
+package frc.robot.subsystems.LED.CANdleSubsystem;
 
 import com.ctre.phoenix6.hardware.CANdle;
 import com.ctre.phoenix6.configs.CANdleConfiguration;
@@ -17,51 +17,47 @@ public class CANdleSubsystem extends SubsystemBase {
     private final int leftStrip = 19;
     private final int backStrip = 19;
     private final int rightStrip = 19;
-    private final int candleLEDs = 110;
+    private final double max = 12.8;
+    private final double min = 10;
+
+    private int frontEndIndex;
+    private int leftEndIndex;
+    private int backEndIndex;
+    private int rightEndIndex;
 
 
 
     public CANdleSubsystem(int canID, DoubleSupplier speedSupplier) {
-        candle = new CANdle(0);
+        candle = new CANdle(canID);
 
         CANdleConfiguration config = new CANdleConfiguration();
         config.LED.BrightnessScalar = 0.7; 
         candle.getConfigurator().apply(config);
     }
 
-    // public void setTeleopZone(int ZoneIndex, int r, int g, int b) {   
-    // }
-
-    // public void setAutoZone(int AutoZoneIndex, int r, int g, int b) {
-    // }
-
-    // public void setDisabledZone(int DisabledZoneIndex, int r, int g, int b) {
-    // }
-
-    public void setSolidColor(int r, int g, int b) {
+    public void setSolidColor(int r, int g, int b, int startIndex, int endIndex) {
         candle.setControl(
-            new SolidColor(8, 8 + totalLEDs - 1)                
+            new SolidColor(startIndex,endIndex)                
             .withColor(new RGBWColor(r, g, b, 0))
         );
     }
 
     public void clearLEDs() {
-        setSolidColor(0, 0, 0);
+        setSolidColor(0, 0, 0, 0, totalLEDs-1);
     }
     
     @Override
     public void periodic() {
-            double batteryVoltage = Math.round(RobotController.getBatteryVoltage() * 10.0) / 10.0;
-    
-            private int frontLedsOffPer = (int) Math.ceil(frontStrip / 40.0);
-            private int leftLedsOffPer = (int) Math.ceil(leftStrip / 40.0);
-            private int backLedsOffPer = (int) Math.ceil(backStrip / 40.0);
-            private int rightLedsOffPer = (int) Math.ceil(rightStrip / 40.0); 
+        double batteryVoltage = RobotController.getBatteryVoltage();
 
-            private int frontEndIndex = (int) (batteryVoltage * frontLedsOffPer);
-            private int leftEndIndex = (int) (batteryVoltage * leftLedsOffPer);
-            private int backEndIndex = (int) (batteryVoltage * backLedsOffPer);
-            private int rightEndIndex = (int) (batteryVoltage * rightLedsOffPer);
+        double fraction = Math.max(0.0, Math.min(1.0, (batteryVoltage - min) / (max - min))); //Clamp the voltage
+        //so you can't get negative numbers, or numbers bigger than 12.8/max
+
+        frontEndIndex = (int) (frontStrip * fraction);
+        leftEndIndex = (int) (leftStrip * fraction);
+        backEndIndex = (int) (backStrip * fraction);
+        rightEndIndex = (int) (rightStrip * fraction);
+
         if (DriverStation.isDisabled()) {
             runDisabledLEDs();
         } else if (DriverStation.isAutonomous()) {
@@ -73,35 +69,31 @@ public class CANdleSubsystem extends SubsystemBase {
 
     //Disabled functions
     private void runDisabledLEDs() {
+        clearLEDs();
 
-        candle.setControl(
-            new SolidColor(8,44)                
-            .withColor(new RGBWColor(0, 0, 255, 0))
-        );
+        if (frontEndIndex > 0) {
+            setSolidColor(0, 0, 255, 8, 8 + frontEndIndex - 1);
+        }
 
-        candle.setControl(
-            new SolidColor(53,44)                
-            .withColor(new RGBWColor(0, 0, 255, 0))
-        );
-
-        candle.setControl(
-            new SolidColor(72,44)                
-            .withColor(new RGBWColor(0, 0, 255, 0))
-        );
-
-        candle.setControl(
-            new SolidColor(91,44)                
-            .withColor(new RGBWColor(0, 0, 255, 0))
-        );
-
+        if (backEndIndex > 0) {
+            setSolidColor(0, 0, 255, 53, 53 + backEndIndex - 1);
+        }
+        if (leftEndIndex > 0) {
+            setSolidColor(0, 0, 255, 72, 72 + leftEndIndex - 1);
+        }
+        if (rightEndIndex > 0) {
+            setSolidColor(0, 0, 255, 91, 91 + rightEndIndex - 1);
+        }
     }
 
     //Autonomous functions
-    private void runAutoLEDs() {        
+    private void runAutoLEDs() {   
+        clearLEDs();     
     }
 
     //Teleop functions
     private void runTeleopLEDs() {
+        clearLEDs();
     }
 
 }
