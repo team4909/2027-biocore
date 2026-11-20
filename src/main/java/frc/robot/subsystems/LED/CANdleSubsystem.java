@@ -17,8 +17,8 @@ public class CANdleSubsystem extends SubsystemBase {
     private final int leftStrip = 19;
     private final int backStrip = 19;
     private final int rightStrip = 19;
-    private final double max = 12.8;
-    private final double min = 10;
+    private final double maxVoltage = 12.8;
+    private final double minVoltage = 10;
 
     private int frontEndIndex;
     private int leftEndIndex;
@@ -50,7 +50,7 @@ public class CANdleSubsystem extends SubsystemBase {
     public void periodic() {
         double batteryVoltage = RobotController.getBatteryVoltage();
 
-        double fraction = Math.max(0.0, Math.min(1.0, (batteryVoltage - min) / (max - min))); //Clamp the voltage
+        double fraction = Math.max(0.0, Math.min(1.0, (batteryVoltage - minVoltage) / (maxVoltage - minVoltage))); //Clamp the voltage
         //so you can't get negative numbers, or numbers bigger than 12.8/max
 
         frontEndIndex = (int) (frontStrip * fraction);
