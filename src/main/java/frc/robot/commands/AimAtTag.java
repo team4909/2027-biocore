@@ -40,7 +40,7 @@ public class AimAtTag extends Command {
     ) {
         this.drivetrain = drivetrain;
         this.vision = vision;
-        this.targetTagId = 30;
+        this.targetTagId = targetTagId;
         this.maxAngularVelocity = maxAngularVelocity;
 
         controller.enableContinuousInput(-Math.PI, Math.PI);
@@ -62,6 +62,7 @@ public class AimAtTag extends Command {
         
         // get the pose of the tag from the field layout
         var targetTagPose = VisionConstants.aprilTagLayout.getTagPose(targetTagId);
+        //Think about: This will never be empty, i dont think
         if (targetTagPose.isEmpty()) {
             //requested omega is requested change, with a number
             //so think of it as "requested to turn at this speed/angle"
@@ -69,10 +70,12 @@ public class AimAtTag extends Command {
             drivetrain.setControl(new SwerveRequest.SwerveDriveBrake());
             return;
         }
+
         //Turn the target tag pose into a 2d pose
         Pose2d targetTagPose2d = targetTagPose.get().toPose2d();
         // calculate the angle to the target tag
         Translation2d robotToTag = targetTagPose2d.getTranslation().minus(robotPose.getTranslation());
+        //where we want to be
         Rotation2d desiredAngle = new Rotation2d(robotToTag.getX(), robotToTag.getY());
         //get our current rotation in radians
         var currentHeading = robotPose.getRotation().getRadians();
