@@ -13,19 +13,28 @@ import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
-import frc.robot.commands.TurnToHeading;
+import frc.robot.commands.AimAtTag;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOPhotonVision;
+import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+
 import frc.robot.subsystems.Music.MusicSubsystem;
 
 // PathPlanner Imports
@@ -37,12 +46,17 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 public class RobotContainer {
     
-    private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); 
-    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); 
+    private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+    //The maximum speed at which the robot is allowed to
+    //rotate around its Z/Vertical axis (In radians/second)
+    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
 
     /* Setting up bindings for necessary control of the swerve drive platform */
+    //How the drivetrain should move.
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) 
+            //.withDeadband sets a minimum transitional speed
+            //withRotationalDeadband does the same thing
+            .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1)
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); 
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -55,8 +69,14 @@ public class RobotContainer {
 
     //Make the DT
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-    private final SwerveRequest.FieldCentric fieldCentricDrive = new SwerveRequest.FieldCentric()
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage); 
+    private final SwerveRequest.ApplyRobotSpeeds pathPlannerDrive =
+            new SwerveRequest.ApplyRobotSpeeds(); 
+            
+    private final Vision vision = new Vision(
+        drivetrain::addVisionMeasurement,
+        createCameraIO(VisionConstants.frontLeftCameraName, VisionConstants.robotToFrontLeftCamera),
+        createCameraIO(VisionConstants.frontRightCameraName, VisionConstants.robotToFrontRightCamera)
+    );
 
     //Choose auto and choose mirror.
     private SendableChooser<Command> autoChooser;
@@ -73,23 +93,53 @@ public class RobotContainer {
     );
 
     public RobotContainer() {
+        //registers vision as a subsystem
+        //this allowed the scheduler to call the periodic method of vision
+        CommandScheduler.getInstance().registerSubsystem(vision);
+
+        //Currently does nothing since the commands are commented out in configureNamedCommands()
         configureNamedCommands();
+
+        //Autonomous
         SmartDashboard.putNumber("Auto/HeadingDeg", 0.0);
         SmartDashboard.putNumber("Auto/RequestedOmega", 0.0);
+        //--Walter--//
+        //Depends on where you are on the field,
+        //for autos.
+        //--Walter--//
         mirrorChooser.setDefaultOption("Don't Mirror (Blue)", false);
         mirrorChooser.addOption("Mirror Path (Red)", true);
         SmartDashboard.putData("Manual Mirror Override", mirrorChooser);
-
+        //--Walter--//
+        //Configures pathPlanner with the drivetrains
+        //pose, resetPose, and getRobotRelativeSpeeds methods
+        //--Walter--//
         configureAutoBuilder();
+        //--Walter--//
+        //builds the autoChooser
+        //--Walter--//
         autoChooser = AutoBuilder.buildAutoChooser();
+        
         SmartDashboard.putData("Auto Mode", autoChooser);
                 SmartDashboard.putNumber("Auto/HeadingDeg",drivetrain.getState().Pose.getRotation().getDegrees());
+        
+        //Connects controller's buttons //--Walter--//
         configureBindings();
     }
+    
+    //Ran for simulations, creates fake cameras //--Walter--//
+    private VisionIO createCameraIO(String name, Transform3d robotToCamera) {
+        if (RobotBase.isSimulation()) {
+            //creates a new VisionIOPhotonVisionSim object and returns it
+            return new VisionIOPhotonVisionSim(name, robotToCamera, () -> drivetrain.getState().Pose);
+        }
+        return new VisionIOPhotonVision(name, robotToCamera);
+    }
+
 
     private void configureNamedCommands() {
-        NamedCommands.registerCommand("Spin90", new TurnToHeading(drivetrain, 90.0));
-        NamedCommands.registerCommand("Spin180", new TurnToHeading(drivetrain, 180.0));
+        // NamedCommands.registerCommand("Spin90", new TurnToHeading(drivetrain, 90.0));
+        // NamedCommands.registerCommand("Spin180", new TurnToHeading(drivetrain, 180.0));
     }
 
     private void configureAutoBuilder() {
@@ -115,15 +165,13 @@ public class RobotContainer {
 
     private void driveRobotRelative(ChassisSpeeds speeds) {
         SmartDashboard.putNumber("Auto/RequestedOmega", speeds.omegaRadiansPerSecond);
-        drivetrain.setControl(
-            fieldCentricDrive
-                .withVelocityX(speeds.vxMetersPerSecond)
-                .withVelocityY(speeds.vyMetersPerSecond)
-                .withRotationalRate(speeds.omegaRadiansPerSecond)
-        );
+        drivetrain.setControl(pathPlannerDrive.withSpeeds(speeds));
 
     }
-
+    //--Walter--//
+    // configures the buttons for the controller
+    //so the controller can use the buttons and do stuff.
+    //--Walter--//
     private void configureBindings() {
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() ->
@@ -143,7 +191,7 @@ public class RobotContainer {
             point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
         ));
 
-        // SysId routines
+        // SysId (System Identification) routines
         joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
         joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
         joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
@@ -152,10 +200,22 @@ public class RobotContainer {
         // Reset heading
         joystick.back().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
         
-        // 90 degrees is LB, 180 is RB
-        joystick.leftBumper().onTrue(new TurnToHeading(drivetrain, 90.0));
-        joystick.rightBumper().onTrue(new TurnToHeading(drivetrain, 180.0));
+        joystick.povDown().whileTrue(
+            new AimAtTag(
+                drivetrain, 
+                vision, 
+                29, 
+                MaxAngularRate,
+                //lamda
+                //Srihaas: Explain what a lambda is to the readers, walter
+                () -> -joystick.getLeftY() * MaxSpeed,
+                () -> -joystick.getLeftX() * MaxSpeed
+                )
+        );        
 
+        // 90 degrees is LB, 180 is RB
+        //joystick.leftBumper().onTrue(new TurnToHeading(drivetrain, 90.0));
+        //joystick.rightBumper().onTrue(new TurnToHeading(drivetrain, 180.0));
 
         //region Music subsystem controls
         //must be held, i think, since
@@ -170,7 +230,6 @@ public class RobotContainer {
                 musicSubsystem.stopMusic())
         );
         //endregion
-
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }

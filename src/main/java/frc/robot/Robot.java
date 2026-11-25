@@ -2,6 +2,9 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
+//VERY IMPORTANT:
+//SPEED-D-BOT SERIAL # == 030A827B 
+//SPEED-DIER-BOT SERIAL # == 032243C9
 package frc.robot;
 
 import com.ctre.phoenix6.HootAutoReplay;
