@@ -16,6 +16,7 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.DoubleSupplier;
 
 public class AimAtTag extends Command {
 
@@ -26,6 +27,8 @@ public class AimAtTag extends Command {
     private final int targetTagId;
     private final double maxAngularVelocity;
 
+    private final DoubleSupplier velocityX;
+    private final DoubleSupplier velocityY;
 
     private final PIDController controller = new PIDController(4.0, 0.0, 0.2);
 
@@ -36,13 +39,18 @@ public class AimAtTag extends Command {
         CommandSwerveDrivetrain drivetrain,
         Vision vision,
         int targetTagId,
-        double maxAngularVelocity
+        double maxAngularVelocity,
+        DoubleSupplier velocityX,
+        DoubleSupplier velocityY
     ) {
         this.drivetrain = drivetrain;
         this.vision = vision;
         this.targetTagId = targetTagId;
         this.maxAngularVelocity = maxAngularVelocity;
-
+        // Made so robot can still move while aiming
+        this.velocityX = velocityX;
+        this.velocityY = velocityY;
+        
         controller.enableContinuousInput(-Math.PI, Math.PI);
 
         addRequirements(drivetrain);
@@ -102,8 +110,8 @@ public class AimAtTag extends Command {
         //request drive train to turn
         drivetrain.setControl(
             turnRequest
-                .withVelocityX(0.0)
-                .withVelocityY(0.0)
+                .withVelocityX(velocityX.getAsDouble())
+                .withVelocityY(velocityY.getAsDouble())
                 .withRotationalRate(output)
         );
     }
