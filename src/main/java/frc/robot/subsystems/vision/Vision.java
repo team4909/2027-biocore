@@ -120,20 +120,20 @@ public class Vision extends SubsystemBase {
     }
 
     // Get cameras with targets and select the best one
-    List<Integer> cameras = camerasWithTarget();
-    int cameraIndex = cameraOfBestChoice(cameras);
+    // List<Integer> cameras = camerasWithTarget();
+    // int cameraIndex = cameraOfBestChoice(cameras);
 
-    boolean hasTarget = cameraIndex != -1;
+    // boolean hasTarget = cameraIndex != -1;
 
-    SmartDashboard.putBoolean(
-        "Vision/Aiming/HasTarget",
-        hasTarget
-    );
+    // SmartDashboard.putBoolean(
+    //     "Vision/Aiming/HasTarget",
+    //     hasTarget
+    // );
 
-    SmartDashboard.putNumber(
-        "Vision/Aiming/TxDegrees",
-        hasTarget ? getTargetX(cameraIndex).getDegrees() : 0.0
-    );
+    // SmartDashboard.putNumber(
+    //     "Vision/Aiming/TxDegrees",
+    //     hasTarget ? getTargetX(cameraIndex).getDegrees() : 0.0
+    // );
 
     // Initialize logging values
     List<Pose3d> allTagPoses = new LinkedList<>();
