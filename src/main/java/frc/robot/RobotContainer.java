@@ -6,7 +6,10 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.List;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -32,6 +35,8 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 
+import frc.robot.subsystems.Music.MusicSubsystem;
+
 // PathPlanner Imports
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -56,10 +61,13 @@ public class RobotContainer {
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
+    //Telementry logger for the swerve drive platform, to be used in the SmartDashboard
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
+    //Joystick Declaration
     private final CommandXboxController joystick = new CommandXboxController(0);
 
+    //Make the DT
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     private final SwerveRequest.ApplyRobotSpeeds pathPlannerDrive =
             new SwerveRequest.ApplyRobotSpeeds(); 
@@ -70,8 +78,19 @@ public class RobotContainer {
         createCameraIO(VisionConstants.frontRightCameraName, VisionConstants.robotToFrontRightCamera)
     );
 
+    //Choose auto and choose mirror.
     private SendableChooser<Command> autoChooser;
     private final SendableChooser<Boolean> mirrorChooser = new SendableChooser<>();
+
+    //Music subsystem
+    private final MusicSubsystem musicSubsystem = new MusicSubsystem(
+        List.of(
+            drivetrain.getModule(0).getDriveMotor(), // Front Left
+            drivetrain.getModule(1).getDriveMotor(), // Front Right
+            drivetrain.getModule(2).getDriveMotor(), // Back Left
+            drivetrain.getModule(3).getDriveMotor()  // Back Right
+        )
+    );
 
     public RobotContainer() {
         //registers vision as a subsystem
@@ -180,6 +199,7 @@ public class RobotContainer {
 
         // Reset heading
         joystick.back().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        
         joystick.povDown().whileTrue(
             new AimAtTag(
                 drivetrain, 
@@ -192,11 +212,24 @@ public class RobotContainer {
                 () -> -joystick.getLeftX() * MaxSpeed
                 )
         );        
-        // 90 degrees is LB, 180 is RB [UPDATE: Commented because it is unused]
 
-        
-        // joystick.leftBumper().onTrue(new TurnToHeading(drivetrain, 90.0));
-        // joystick.rightBumper().onTrue(new TurnToHeading(drivetrain, 180.0));
+        // 90 degrees is LB, 180 is RB
+        //joystick.leftBumper().onTrue(new TurnToHeading(drivetrain, 90.0));
+        //joystick.rightBumper().onTrue(new TurnToHeading(drivetrain, 180.0));
+
+        //region Music subsystem controls
+        //must be held, i think, since
+        //when you press it and hold the first
+        //method plays, once, and when you let go
+        //(onFalse) and it stops the music
+        joystick.povUp().onTrue(Commands.runOnce(() -> 
+            // Plays a random song from
+            musicSubsystem.playRandomSong())
+        );
+        joystick.povUp().onFalse(Commands.runOnce(() ->
+                musicSubsystem.stopMusic())
+        );
+        //endregion
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
