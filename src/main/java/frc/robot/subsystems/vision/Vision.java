@@ -6,15 +6,15 @@
 // license that can be found in the LICENSE file
 // at the root directory of this project.
 
-package frc.robot.subsystems.vision;
+package frc.robot.subsystems.Vision;
 
-import static frc.robot.subsystems.vision.VisionConstants.angularStdDevBaseline;
-import static frc.robot.subsystems.vision.VisionConstants.aprilTagLayout;
-import static frc.robot.subsystems.vision.VisionConstants.cameraStdDevFactors;
-import static frc.robot.subsystems.vision.VisionConstants.linearStdDevBaseline;
-import static frc.robot.subsystems.vision.VisionConstants.linearStdDevMegatag2Factor;
-import static frc.robot.subsystems.vision.VisionConstants.maxAmbiguity;
-import static frc.robot.subsystems.vision.VisionConstants.maxZError;
+import static frc.robot.subsystems.Vision.VisionConstants.angularStdDevBaseline;
+import static frc.robot.subsystems.Vision.VisionConstants.aprilTagLayout;
+import static frc.robot.subsystems.Vision.VisionConstants.cameraStdDevFactors;
+import static frc.robot.subsystems.Vision.VisionConstants.linearStdDevBaseline;
+import static frc.robot.subsystems.Vision.VisionConstants.linearStdDevMegatag2Factor;
+import static frc.robot.subsystems.Vision.VisionConstants.maxAmbiguity;
+import static frc.robot.subsystems.Vision.VisionConstants.maxZError;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -35,8 +35,8 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
-import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
+import frc.robot.subsystems.Vision.VisionIO.PoseObservationType;
+import frc.robot.subsystems.Vision.VisionIO.VisionIOInputs;
 
 public class Vision extends SubsystemBase {
   private final VisionConsumer consumer;

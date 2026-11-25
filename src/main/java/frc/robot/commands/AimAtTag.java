@@ -12,8 +12,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.subsystems.Vision.Vision;
+import frc.robot.subsystems.Vision.VisionConstants;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.function.DoubleSupplier;

@@ -149,6 +149,10 @@ public class TunerConstants {
     private static final Angle kFrontLeftEncoderOffset = Rotations.of(
         IS_SPEED_DIER_BOT ? -0.438232421875 : IS_SPEED_D_BOT ? 0.43603515625 : 0
     );
+
+    private static final boolean kFrontLeftSteerMotorInverted = false;
+    private static final boolean kFrontLeftEncoderInverted = false;
+    
     private static final Distance kFrontLeftXPos = Inches.of(10.25);
     private static final Distance kFrontLeftYPos = Inches.of(10.25);
 
@@ -159,6 +163,10 @@ public class TunerConstants {
     private static final Angle kFrontRightEncoderOffset = Rotations.of(
         IS_SPEED_DIER_BOT ? 0.154541015625 : IS_SPEED_D_BOT ? -0.023681640625 : 0
     );
+
+    private static final boolean kFrontRightSteerMotorInverted = false;
+    private static final boolean kFrontRightEncoderInverted = false;
+
     private static final Distance kFrontRightXPos = Inches.of(10.25);
     private static final Distance kFrontRightYPos = Inches.of(-10.25);
 
@@ -169,6 +177,9 @@ public class TunerConstants {
     private static final Angle kBackLeftEncoderOffset = Rotations.of(
         IS_SPEED_DIER_BOT ? -0.059814453125 : IS_SPEED_D_BOT ? 0.189697265625 : 0
     );
+
+    private static final boolean kBackLeftSteerMotorInverted = false;
+    private static final boolean kBackLeftEncoderInverted = false;
     private static final Distance kBackLeftXPos = Inches.of(-10.25);
     private static final Distance kBackLeftYPos = Inches.of(10.25);
 

@@ -6,12 +6,13 @@
 // license that can be found in the LICENSE file
 // at the root directory of this project.
 
-package frc.robot.subsystems.vision;
-
-import static frc.robot.subsystems.vision.VisionConstants.aprilTagLayout;
+package frc.robot.subsystems.Vision;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;
+
+import static frc.robot.subsystems.Vision.VisionConstants.aprilTagLayout;
+
 import java.util.function.Supplier;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
