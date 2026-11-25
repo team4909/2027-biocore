@@ -85,7 +85,7 @@ public class AimAtTag extends Command {
         var tx = desiredAngle.getRadians() - currentHeading;
 
 
-        double output = controller.calculate(tx, 0.0);
+        double output = controller.calculate(-tx, 0.0);
         
         //this is so that we dont turn too fast.
         //maxAngularVelocity is the max speed we can turn at

@@ -181,7 +181,7 @@ public class RobotContainer {
         // Reset heading
         joystick.back().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
         joystick.povDown().whileTrue(
-            new AimAtTag(drivetrain, vision, 30, MaxAngularRate)
+            new AimAtTag(drivetrain, vision, 29, MaxAngularRate)
         );        
         // 90 degrees is LB, 180 is RB [UPDATE: Commented because it is unused]
 
