@@ -160,10 +160,25 @@ public class TunerConstants {
     private static final Distance kFrontLeftXPos = Inches.of(10.250);
     private static final Distance kFrontLeftYPos = Inches.of(10.250);
 
+    
     // Front Right
-    private static final int kFrontRightDriveMotorId = 1;
-    private static final int kFrontRightSteerMotorId = 11;
-    private static final int kFrontRightEncoderId = 1;
+    if (robot.isSpeedDBot) 
+    {
+        private static final int kFrontRightDriveMotorId = 1;
+        private static final int kFrontRightSteerMotorId = 11;
+        private static final int kFrontRightEncoderId = 1;
+    }
+    
+    else if (robot.isSpeedDierBot) 
+    {
+        private static final int kFrontRightDriveMotorId = 3;
+        private static final int kFrontRightSteerMotorId = 33;
+        private static final int kFrontRightEncoderId = 3;
+    }
+    else 
+    {
+        System.out.println("Robot in simulation mode, using default Front Right Motor IDs");
+    }
     
     if (robot.isSpeedDBot) 
     { private static final Angle kFrontRightEncoderOffset = Rotations.of(-0.023681640625); } 
@@ -178,6 +193,23 @@ public class TunerConstants {
     private static final Distance kFrontRightYPos = Inches.of(-10.250);
 
     // Back Left
+    // I Heart C# if structuring :) - Walter
+    if (robot.isSpeedDBot) 
+    {
+        private static final int kBackLeftDriveMotorId = 3;
+        private static final int kBackLeftSteerMotorId = 33;
+        private static final int kBackLeftEncoderId = 3;
+    }
+    else if (robot.isSpeedDierBot) 
+    {
+        private static final int kBackLeftDriveMotorId = 1;
+        private static final int kBackLeftSteerMotorId = 11;
+        private static final int kBackLeftEncoderId = 1;
+    }
+    else 
+    {
+        System.out.println("Robot in simulation mode, using default Back Left Motor IDs");
+    }
     private static final int kBackLeftDriveMotorId = 3;
     private static final int kBackLeftSteerMotorId = 33;
     private static final int kBackLeftEncoderId = 3;
