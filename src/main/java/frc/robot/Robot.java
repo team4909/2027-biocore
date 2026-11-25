@@ -17,6 +17,15 @@ public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
 
     private final RobotContainer m_robotContainer;
+    
+    private final String currentRobotSerialNumber = robot.RobotController.getSerialNumber();
+
+    private final String speedDBotSerialNumber = "030A827B";
+    private final String speedDierBotSerialNumber = "032243C9";
+
+    private boolean isSpeedDBot = false;
+    private boolean isSpeedDierBot = false;
+    private boolean isSimRobot = false;
 
     /* log and replay timestamp and joystick data */
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
@@ -24,6 +33,20 @@ public class Robot extends TimedRobot {
         .withJoystickReplay();
 
     public Robot() {
+        
+        if (currentRobotSerialNumber.equals(speedDBotSerialNumber)) {
+            isSpeedDBot = true;
+            System.out.println("Speed-D-Bot detected");
+        } 
+        else if (currentRobotSerialNumber.equals(speedDierBotSerialNumber)) {
+            isSpeedDierBot = true;
+            System.out.println("Speed-Dier-Bot detected");
+        } 
+        else {
+            isSimRobot = true;
+            System.out.println("Sim Robot detected");    
+        }
+
         m_robotContainer = new RobotContainer();
     }
 
