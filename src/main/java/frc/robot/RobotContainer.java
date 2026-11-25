@@ -187,6 +187,7 @@ public class RobotContainer {
                 29, 
                 MaxAngularRate,
                 //lamda
+                //Srihaas: Explain what a lambda is to the readers, walter
                 () -> -joystick.getLeftY() * MaxSpeed,
                 () -> -joystick.getLeftX() * MaxSpeed
                 )
