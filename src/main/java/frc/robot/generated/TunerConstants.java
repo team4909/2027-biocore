@@ -13,6 +13,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.*;
+import edu.wpi.first.wpilibj.RobotController;
 
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
@@ -75,18 +76,6 @@ public class TunerConstants {
     // Configs for the Pigeon 2; leave this null to skip applying Pigeon 2 configs
     private static final Pigeon2Configuration pigeonConfigs = null;
 
-    // CAN bus that the devices are located on;
-    // All swerve devices must share the same CAN bus
-    if (robot.isSpeedDBot) {
-        public static final CANBus kCANBus = new CANBus("CANivore2", "./logs/example.hoot");
-        System.out.println("Robot is Speed-D-Bot, using CANivore2");
-    } else if (robot.isSpeedDierBot) {
-        //dont use Canvivore2 for speedier bot, use roborio
-        public static final CANBus kCANBus = new CANBus("", "./logs/example.hoot");
-        System.out.println("Robot is Speed-Dier-Bot, using RoboRIO");
-    } else {
-        System.out.println("Robot in simulation mode, using default CAN bus");
-    }
 
     // Measured robot speed (m/s) at 12 V applied output;
     // This is NOT the desired max robot speed - see MaxSpeed in RobotContainer instead;
@@ -112,6 +101,17 @@ public class TunerConstants {
     // Simulated voltage necessary to overcome friction
     private static final Voltage kSteerFrictionVoltage = Volts.of(0.2);
     private static final Voltage kDriveFrictionVoltage = Volts.of(0.2);
+
+    private static final boolean IS_SPEED_D_BOT =
+        RobotController.getSerialNumber().equals("030A827B");
+    private static final boolean IS_SPEED_DIER_BOT =
+        RobotController.getSerialNumber().equals("032243C9");
+
+    private static final CANBus kCANBus = IS_SPEED_D_BOT
+        ? new CANBus("CANivore2", "./logs/example.hoot")
+        : IS_SPEED_DIER_BOT
+            ? new CANBus("", "./logs/example.hoot")
+            : new CANBus("");
 
     public static final SwerveDrivetrainConstants DrivetrainConstants = new SwerveDrivetrainConstants()
             .withCANBusName(kCANBus.getName())
@@ -143,99 +143,43 @@ public class TunerConstants {
 
 
     // Front Left
-    
     private static final int kFrontLeftDriveMotorId = 4;
     private static final int kFrontLeftSteerMotorId = 44;
     private static final int kFrontLeftEncoderId = 4;
+    private static final Angle kFrontLeftEncoderOffset = Rotations.of(
+        IS_SPEED_DIER_BOT ? -0.438232421875 : IS_SPEED_D_BOT ? 0.43603515625 : 0
+    );
+    private static final Distance kFrontLeftXPos = Inches.of(10.25);
+    private static final Distance kFrontLeftYPos = Inches.of(10.25);
 
-    if (robot.isSpeedDBot) 
-    { private static final Angle kFrontLeftEncoderOffset = Rotations.of(0.43603515625); } 
-    else if (robot.isSpeedDierBot) 
-    { private static final Angle kFrontLeftEncoderOffset = Rotations.of(-0.438232421875); } 
-    else 
-    { System.out.println("Robot in simulation mode, using default Front Left Encoder Offset"); }
-    private static final boolean kFrontLeftSteerMotorInverted = false;
-    private static final boolean kFrontLeftEncoderInverted = false;
-
-    private static final Distance kFrontLeftXPos = Inches.of(10.250);
-    private static final Distance kFrontLeftYPos = Inches.of(10.250);
-
-    
     // Front Right
-    if (robot.isSpeedDBot) 
-    {
-        private static final int kFrontRightDriveMotorId = 1;
-        private static final int kFrontRightSteerMotorId = 11;
-        private static final int kFrontRightEncoderId = 1;
-    }
-    
-    else if (robot.isSpeedDierBot) 
-    {
-        private static final int kFrontRightDriveMotorId = 3;
-        private static final int kFrontRightSteerMotorId = 33;
-        private static final int kFrontRightEncoderId = 3;
-    }
-    else 
-    {
-        System.out.println("Robot in simulation mode, using default Front Right Motor IDs");
-    }
-    
-    if (robot.isSpeedDBot) 
-    { private static final Angle kFrontRightEncoderOffset = Rotations.of(-0.023681640625); } 
-    else if (robot.isSpeedDierBot) 
-    { private static final Angle kFrontRightEncoderOffset = Rotations.of(0.154541015625); } 
-    else 
-    { System.out.println("Robot in simulation mode, using default Front Right Encoder Offset"); }
-    private static final boolean kFrontRightSteerMotorInverted = false;
-    private static final boolean kFrontRightEncoderInverted = false;
-
-    private static final Distance kFrontRightXPos = Inches.of(10.250);
-    private static final Distance kFrontRightYPos = Inches.of(-10.250);
+    private static final int kFrontRightDriveMotorId = IS_SPEED_DIER_BOT ? 3 : 1;
+    private static final int kFrontRightSteerMotorId = IS_SPEED_DIER_BOT ? 33 : 11;
+    private static final int kFrontRightEncoderId = IS_SPEED_DIER_BOT ? 3 : 1;
+    private static final Angle kFrontRightEncoderOffset = Rotations.of(
+        IS_SPEED_DIER_BOT ? 0.154541015625 : IS_SPEED_D_BOT ? -0.023681640625 : 0
+    );
+    private static final Distance kFrontRightXPos = Inches.of(10.25);
+    private static final Distance kFrontRightYPos = Inches.of(-10.25);
 
     // Back Left
-    // I Heart C# if structuring :) - Walter
-    if (robot.isSpeedDBot) 
-    {
-        private static final int kBackLeftDriveMotorId = 3;
-        private static final int kBackLeftSteerMotorId = 33;
-        private static final int kBackLeftEncoderId = 3;
-    }
-    else if (robot.isSpeedDierBot) 
-    {
-        private static final int kBackLeftDriveMotorId = 1;
-        private static final int kBackLeftSteerMotorId = 11;
-        private static final int kBackLeftEncoderId = 1;
-    }
-    else 
-    {
-        System.out.println("Robot in simulation mode, using default Back Left Motor IDs");
-    }
-    private static final int kBackLeftDriveMotorId = 3;
-    private static final int kBackLeftSteerMotorId = 33;
-    private static final int kBackLeftEncoderId = 3;
-    if (robot.isSpeedDBot) 
-    { private static final Angle kBackLeftEncoderOffset = Rotations.of(0.189697265625); } 
-    else if (robot.isSpeedDierBot) 
-    { private static final Angle kBackLeftEncoderOffset = Rotations.of(-0.059814453125); } 
-    else 
-    { System.out.println("Robot in simulation mode, using default Back Left Encoder Offset"); }
-    private static final boolean kBackLeftSteerMotorInverted = false;
-    private static final boolean kBackLeftEncoderInverted = false;
-
+    private static final int kBackLeftDriveMotorId = IS_SPEED_DIER_BOT ? 1 : 3;
+    private static final int kBackLeftSteerMotorId = IS_SPEED_DIER_BOT ? 11 : 33;
+    private static final int kBackLeftEncoderId = IS_SPEED_DIER_BOT ? 1 : 3;
+    private static final Angle kBackLeftEncoderOffset = Rotations.of(
+        IS_SPEED_DIER_BOT ? -0.059814453125 : IS_SPEED_D_BOT ? 0.189697265625 : 0
+    );
     private static final Distance kBackLeftXPos = Inches.of(-10.25);
-    private static final Distance kBackLeftYPos = Inches.of(10.250);
+    private static final Distance kBackLeftYPos = Inches.of(10.25);
 
     // Back Right
     private static final int kBackRightDriveMotorId = 2;
     private static final int kBackRightSteerMotorId = 22;
     private static final int kBackRightEncoderId = 2;
-    if (robot.isSpeedDBot) 
-    { private static final Angle kBackRightEncoderOffset = Rotations.of(0.48046875); } 
-    else if (robot.isSpeedDierBot) 
-    { private static final Angle kBackRightEncoderOffset = Rotations.of(-0.3662109375); } 
-    else 
-    { System.out.println("Robot in simulation mode, using default Back Right Encoder Offset"); }
-    
+    private static final Angle kBackRightEncoderOffset = Rotations.of(
+        IS_SPEED_DIER_BOT ? -0.3662109375 : IS_SPEED_D_BOT ? 0.48046875 : 0
+    );
+
     private static final boolean kBackRightSteerMotorInverted = false;
     private static final boolean kBackRightEncoderInverted = false;
 
