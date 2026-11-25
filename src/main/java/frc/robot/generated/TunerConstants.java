@@ -77,7 +77,16 @@ public class TunerConstants {
 
     // CAN bus that the devices are located on;
     // All swerve devices must share the same CAN bus
-    public static final CANBus kCANBus = new CANBus("CANivore2", "./logs/example.hoot");
+    if (robot.isSpeedDBot) {
+        public static final CANBus kCANBus = new CANBus("CANivore2", "./logs/example.hoot");
+        System.out.println("Robot is Speed-D-Bot, using CANivore2");
+    } else if (robot.isSpeedDierBot) {
+        //dont use Canvivore2 for speedier bot, use roborio
+        public static final CANBus kCANBus = new CANBus("", "./logs/example.hoot");
+        System.out.println("Robot is Speed-Dier-Bot, using RoboRIO");
+    } else {
+        System.out.println("Robot in simulation mode, using default CAN bus");
+    }
 
     // Measured robot speed (m/s) at 12 V applied output;
     // This is NOT the desired max robot speed - see MaxSpeed in RobotContainer instead;
@@ -138,7 +147,13 @@ public class TunerConstants {
     private static final int kFrontLeftDriveMotorId = 4;
     private static final int kFrontLeftSteerMotorId = 44;
     private static final int kFrontLeftEncoderId = 4;
-    private static final Angle kFrontLeftEncoderOffset = Rotations.of(0.43603515625);
+
+    if (robot.isSpeedDBot) 
+    { private static final Angle kFrontLeftEncoderOffset = Rotations.of(0.43603515625); } 
+    else if (robot.isSpeedDierBot) 
+    { private static final Angle kFrontLeftEncoderOffset = Rotations.of(-0.438232421875); } 
+    else 
+    { System.out.println("Robot in simulation mode, using default Front Left Encoder Offset"); }
     private static final boolean kFrontLeftSteerMotorInverted = false;
     private static final boolean kFrontLeftEncoderInverted = false;
 
@@ -149,7 +164,13 @@ public class TunerConstants {
     private static final int kFrontRightDriveMotorId = 1;
     private static final int kFrontRightSteerMotorId = 11;
     private static final int kFrontRightEncoderId = 1;
-    private static final Angle kFrontRightEncoderOffset = Rotations.of(-0.023681640625);
+    
+    if (robot.isSpeedDBot) 
+    { private static final Angle kFrontRightEncoderOffset = Rotations.of(-0.023681640625); } 
+    else if (robot.isSpeedDierBot) 
+    { private static final Angle kFrontRightEncoderOffset = Rotations.of(0.154541015625); } 
+    else 
+    { System.out.println("Robot in simulation mode, using default Front Right Encoder Offset"); }
     private static final boolean kFrontRightSteerMotorInverted = false;
     private static final boolean kFrontRightEncoderInverted = false;
 
@@ -160,7 +181,12 @@ public class TunerConstants {
     private static final int kBackLeftDriveMotorId = 3;
     private static final int kBackLeftSteerMotorId = 33;
     private static final int kBackLeftEncoderId = 3;
-    private static final Angle kBackLeftEncoderOffset = Rotations.of(0.189697265625);
+    if (robot.isSpeedDBot) 
+    { private static final Angle kBackLeftEncoderOffset = Rotations.of(0.189697265625); } 
+    else if (robot.isSpeedDierBot) 
+    { private static final Angle kBackLeftEncoderOffset = Rotations.of(-0.059814453125); } 
+    else 
+    { System.out.println("Robot in simulation mode, using default Back Left Encoder Offset"); }
     private static final boolean kBackLeftSteerMotorInverted = false;
     private static final boolean kBackLeftEncoderInverted = false;
 
@@ -171,7 +197,13 @@ public class TunerConstants {
     private static final int kBackRightDriveMotorId = 2;
     private static final int kBackRightSteerMotorId = 22;
     private static final int kBackRightEncoderId = 2;
-    private static final Angle kBackRightEncoderOffset = Rotations.of(0.48046875);
+    if (robot.isSpeedDBot) 
+    { private static final Angle kBackRightEncoderOffset = Rotations.of(0.48046875); } 
+    else if (robot.isSpeedDierBot) 
+    { private static final Angle kBackRightEncoderOffset = Rotations.of(-0.3662109375); } 
+    else 
+    { System.out.println("Robot in simulation mode, using default Back Right Encoder Offset"); }
+    
     private static final boolean kBackRightSteerMotorInverted = false;
     private static final boolean kBackRightEncoderInverted = false;
 
